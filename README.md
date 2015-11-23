@@ -12,13 +12,14 @@ Query-answer tranformer etc. tied together using a shell script. It also include
 ## Input and output:
 Input: a set of Horn clauses together with integrity constraints. They are written using Prolog notation:
 e.g. a clause is written as: h(X):- C, b1(X1),...,bn(Xn). 
+
 and an integrity constriant is written as false:- C, b1(X1),...,bn(Xn).
 
 Output: safe or unsafe.
 
 ## How to run:
 1. cd src
-2. ciaoc thresholds; ciaoc cpascc; ciaoc qa; ciaoc insertProps; ciaoc stripSuffix
+2. ciaoc thresholds; ciaoc cpascc; ciaoc qa; ciaoc insertProps; ciaoc stripSuffix; ciaoc genfta; ciaoc cha; ciaoc checkSafety; ciaoc counterExample; ciaoc splitClauseIds; ciaoc ftaRefine
 3. sh rahft.sh \<File containing a set of Horn clauses\> 
 
 Please edit rahft.sh before running the program.
