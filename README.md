@@ -11,6 +11,7 @@ Query-answer tranformer etc. tied together using a shell script. It also include
 
 ## Input and output:
 Input: a set of Horn clauses together with integrity constraints. They are written using Prolog notation:
+
 e.g. a clause is written as: h(X):- C, b1(X1),...,bn(Xn). 
 
 and an integrity constriant is written as false:- C, b1(X1),...,bn(Xn).
