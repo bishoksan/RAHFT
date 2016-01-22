@@ -81,11 +81,11 @@ dropNonIntegerPoint(H0):-
     ppl_Polyhedron_drop_some_non_integer_points(H0,polynomial).
 
 start_ppl :-
-	ppl_initialize,
-	ppl_version(Pv),
-	write('PPL version used: '),
-	write(Pv),
-	nl.
+	ppl_initialize.
+	%ppl_version(Pv),
+	%write('PPL version used: '),
+	%write(Pv),
+	%nl.
 	
 end_ppl :-
 	ppl_finalize.

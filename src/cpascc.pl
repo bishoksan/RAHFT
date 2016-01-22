@@ -1,3 +1,8 @@
+/*
+It also generates path FTA, modidied by Bish on 21-01-2016
+
+*/
+
 :- module(cpascc,_).
 
 :- use_module(setops).
@@ -29,6 +34,14 @@
 :- dynamic(clauseCount/1).
 :- dynamic(invariant/2).
 :- dynamic(narrowiterations/1).
+:- dynamic(versionCount/1).
+:- dynamic(versiontransition/2).
+:- dynamic(version/3).
+:- dynamic(clauseCount/1).
+:- dynamic(pathtransition/1).
+:- dynamic(atomicproposition/1).
+:- dynamic cEx/1.
+:- dynamic threshold/1.
 
 go(File) :-
 	go2(File,temp).
@@ -52,7 +65,7 @@ main(['-prg',FileIn, '-o', FileOut]) :-
 	!,
 	go2(FileIn,FileOut).
 main(ArgV) :-
-	write('Starting analysis'),nl,
+	write('Starting Convex Polyhedra analysis'),nl,
 	get_options(ArgV,Options,_),
 	cleanWorkspace,
 	set_options(Options,File,FactFile),
@@ -64,11 +77,24 @@ main(ArgV) :-
 	start_ppl,
 	iterate(G),
 	narrow,
-	nl, write('Analysis Succeeded'),nl,
+	nl, write('Convex Polyhedra Analysis Succeeded'),nl,
 	end_time(user_output),
 	!,
 	factFile(FactFile),
-	ppl_finalize.
+    generateCEx,
+    ppl_finalize.
+
+
+generateCEx:-
+    cEx('$NOCEX'),
+    !.
+generateCEx:-
+    cEx(CexFile),
+    buildversions2,
+    versioniterate,
+    open(CexFile,write,S),
+    findCounterexampleTrace(S),
+    close(S).
 
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -94,7 +120,7 @@ non_recursive_scc(P) :-
 	retract(operatorcount(X)),
 	Y is X + 1,
 	assert(operatorcount(Y)),
-	write('-'),write(X),
+	%write('-'),write(X),
 	newoldfacts,
 	switch_flags.
 	
@@ -103,7 +129,7 @@ recursive_scc(Ps) :-
 	retract(operatorcount(X)),
 	Y is X + 1,
 	assert(operatorcount(Y)),
-	write('-'),write(X),
+	%write('-'),write(X),
 	retractall(flag(first)),
 	fail.
 recursive_scc(Ps) :-
@@ -369,9 +395,13 @@ flattenList([L|Ls],Lout) :-
 	append(L,Lpre,Lout).
 	
 %%% input threshold constraints %%%%
+readWutfacts:-
+    threshold('$NOTHRESHOLD'),
+    !.
 
 readWutfacts :-
-	open('wut.props',read,S),
+    threshold(TFile),
+	open(TFile,read,S),
 	read(S,C),
 	assertWutFacts(C,S),
 	close(S).
@@ -468,6 +498,8 @@ recognised_option('-nowpscalc',nowpscalc,[]).
 recognised_option('-withwut',withwut,[]).
 recognised_option('-detectwps',detectwps(M),[M]).
 recognised_option('-o',factFile(F),[F]).
+recognised_option('-cex',counterExample(F),[F]).
+recognised_option('-threshold',thresholdFile(F),[F]).
 	
 set_options(Options,File,FactFile) :-
 	member(programO(File),Options),
@@ -481,6 +513,8 @@ set_options(Options,File,FactFile) :-
 		assert(widenf(h79))),
 	(member(detectwps(M),Options) -> assert(detectwps(M));
 		assert(detectwps(feedback))),
+    (member(thresholdFile(TFile),Options) -> assert(threshold(TFile));
+		assert(threshold('$NOTHRESHOLD'))),
 	(member(withwut,Options) -> 
 			assert(widenf(withwut)),readWutfacts,
 			(flag(verbose) -> write('Widening points: '),nl,showallwideningpoints;
@@ -491,11 +525,13 @@ set_options(Options,File,FactFile) :-
 	(member(narrowO(NOutput),Options) -> true;
 		NOutput='stdnarrowout'),
 	(member(factFile(FactFile),Options) -> true;
-		FactFile='chaFacts'),
+		true),
 	(member(narrowiterationsO(Nit),Options) -> atom_number(Nit,NitN);
 		NitN is 0),
 	(member(delaywiden(DWit),Options) -> atom_number(DWit,DWitN);
 		DWitN is 0),
+    (member(counterExample(CexFile),Options) -> assert(cEx(CexFile));
+		assert(cEx('$NOCEX'))),
 	assert(delays(DWitN)),
 	assert(narrowiterations(NitN)),
 	detectwps(WPSMethod),
@@ -525,7 +561,15 @@ cleanWorkspace :-
 	retractall(detectwps(_)),
 	retractall(delays(_)),
 	retractall(clauseCount(_)),
+    retractall(versionCount(_)),
+    retractall(versiontransition(_,_)),
+    retractall(version(_,_,_)),
+    retractall(pathtransition(_)),
+    retractall(atomicproposition(_)),
+    retractall(cEx(_)),
 	retractall(narrowiterations(_)).
+
+
 	
 %%%% Output 
 
@@ -541,9 +585,12 @@ showallwideningpoints:-
 	fail.
 showallwideningpoints.
 
+factFile(user_output):-
+    !.
 
 factFile(File) :-
-	(File=user_output -> Sout=user_output; open(File,write,Sout)),
+    open(File,write,Sout),
+	%(File=user_output -> Sout=user_output; open(File,write,Sout)),
 	(oldfact(F,H),
 	ppl_Polyhedron_get_minimized_constraints(H,C),
 	numbervars(F,0,_),
@@ -563,4 +610,192 @@ verbose_write_list([]) :-
 verbose_write_list([X|Xs]) :-
 	write(X),
 	verbose_write_list(Xs).
+
+% Version generation and FTA construction
+
+fact3(F,H,_) :-
+	oldfact(F,H).
+
+buildversions2 :-
+	assert(versionCount(0)),
+	fact3(F,H,_),
+    retract(versionCount(N1)),
+	N is N1+1,
+	assert(versionCount(N)),
+	assert(version(F,H,N)),
+	fail.
+buildversions2.
+
+versioniterate :-
+	assert(clauseCount(0)),
+    versionoperator,
+	fail.
+versioniterate.
+
+versionoperator :-
+	my_clause(Head,B),
+	retract(clauseCount(K)),
+	K1 is K+1,
+	assert(clauseCount(K1)),
+	versionprove(B,Cs,Ds,Vs),
+	Head =.. [_|Xs],
+	linearize(Cs,CsLin),
+	append(CsLin,Ds,CsDs),
+	varset((Head,CsDs),Ys),
+	dummyCList(Ys,DCL),
+	append(CsDs,DCL,CsL),
+	numbervars((Head:-CsL,Vs),0,_),
+	satisfiable(CsL,H1),
+	setdiff(Ys,Xs,Zs),
+	project(H1,Zs,Hp),
+	headversion(Head,Hp,Hv),
+	assertTransition(Hv,Vs,K1).
+
+versionprove([],[],[],[]).
+versionprove([true],[],[],[true]).
+versionprove([B|Bs],[C|Cs],Ds,[B|Vs]):-
+	constraint(B,C),
+	!,
+	versionprove(Bs,Cs,Ds,Vs).
+versionprove([B|Bs],Cs,Ds,[V|Vs]):-
+	getversionfact(B,CsOld,V),
+	versionprove(Bs,Cs,Ds1,Vs),
+	append(CsOld,Ds1,Ds).
+	
+getversionfact(B,Cs1,Bk) :-
+	functor(B,F,N),
+	functor(B1,F,N),
+	version(B1,H,K),	
+	ppl_Polyhedron_get_minimized_constraints(H,Cs2),
+	melt((B1,Cs2),(B,Cs1)),
+	name(F,NF),
+	name(K,NK),
+	append("_v",NK,SuffK),
+	append(NF,SuffK,NFK),
+	name(FK,NFK),
+	B =.. [F|Xs],
+	Bk =.. [FK|Xs].
+
+headversion(Head,_,Hk) :-
+	version(Head,_,K), 
+	Head =.. [F|Xs],
+	name(F,NF),
+	name(K,NK),
+	append("_v",NK,SuffK),
+	append(NF,SuffK,NFK),
+	name(FK,NFK),
+	Hk =.. [FK|Xs].
+
+stateSymb(H,R) :-
+	functor(H,F,_),
+	name(F,T),
+	append(_,[95|Xs],T),
+	\+ member(95,Xs),
+	name(R,Xs).
+
+unaryBody([V],[X],VX) :-
+	!,
+	VX =.. [V,X].
+unaryBody([V|Vs],[X|Xs],(VX,VXs)) :-
+	VX =.. [V,X],
+	unaryBody(Vs,Xs,VXs).
+unaryBody([],[],true).
+
+bodyStates([],[]) :-
+	!.
+bodyStates([B|Bs],BSs) :-
+	constraint(B,_),
+	!,
+	bodyStates(Bs,BSs).
+bodyStates([B|Bs],[BS|BSs]) :-
+	stateSymb(B,BS),
+	bodyStates(Bs,BSs).
+
+clauseFunctor(N1,F) :-
+	name(N1,M),
+	append("c",M,CM),
+	name(F,CM).
+
+makeAtomicPropositionFact(true,Head,Prop) :-
+	!,
+	Head =.. [R|_],
+	Prop =.. [prop,R,R].
+makeAtomicPropositionFact(Body,_Head,Prop) :-
+	Body =.. [R1,_X],
+	Prop =.. [prop,R1,R1].
+
+makeBpath(true, true) :-
+	!.
+makeBpath(Body,BPath) :-
+	Body =.. [R1,X],
+	BPath =.. [path,[R1|X]].
+
+ makeHpath(true,Head,HPath) :-
+        !,
+        Head =.. [R|_],
+        HPath =.. [initState,R].
+ makeHpath(Body,Head,HPath) :-
+	Body =.. [R1,_X],
+	Head =.. [R,_],
+	HPath =.. [trans,R1,R].
+
+assertTransition(Hv,Vs,K1) :-
+	stateSymb(Hv,R),
+	bodyStates(Vs,BSs),
+	clauseFunctor(K1,F),
+	L =.. [F|BSs],
+	functor(L,F,M),
+	functor(L1,F,M),
+	L1 =.. [F|Xs],
+	canonical(L1),
+	Head =.. [R,L1],
+	unaryBody(BSs,Xs,Body),
+	assert(versiontransition(Head,Body)),
+	makeHpath(Body,Head,HPath),
+	makeBpath(Body,_BPath),
+	makeAtomicPropositionFact(Body,Head,Prop),
+	assert(pathtransition(HPath)),
+	assert(atomicproposition(Prop)).
+
+findCounterexampleTrace(S) :-
+	version(false,_,Y),
+	operatorcount(J),
+	name(Y,K),
+	append("v",K,VK),
+	name(VN,VK),
+	findnsols(1,X,(
+		Goal =.. [VN,X],
+		findTrace(Goal,J),
+		write(S,counterexample(X)),
+		write(S,'.'),
+		nl(S),
+		write(user_output,X),
+		write(user_output,'.'),
+		nl(user_output)),
+	[_|_]).
+findCounterexampleTrace(S) :-
+	write(S,'safe'),
+	write(S,'.'),
+	nl(S).	
+	
+findTrace(true,_).
+findTrace(Goal,J) :-
+	J > 0,
+	functor(Goal,P,M),
+	functor(H,P,M),
+	versiontransition(H,B),
+	melt((H,B),(Goal,Body)),
+	J1 is J-1,
+	findTrace(Body,J1).
+findTrace((G,Gs),J) :-
+	J > 0,
+	findTrace(G,J),
+	findTrace(Gs,J).
+
+for(Low,Low,High) :-
+	Low =< High.
+for(I,Low,High) :-
+	Low < High,
+	Low1 is Low+1,
+	for(I,Low1,High).
 	

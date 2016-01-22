@@ -1,18 +1,18 @@
-:- module(counterExample,_).
+:- module(counterExample,[checkCounterExample/3, main/1]).
 
 :- use_module(linearize).
 :- use_module(ppl_ops).
 :- use_module(input_ppl_clausenum).
 
-main([F]) :-
-	unsafe(F,'traceterm.out').
+main([F, TraceF,Result]) :-
+	unsafe(F,TraceF, Result).
 	
-unsafe(F,PFile) :-
+unsafe(F,PFile, Result) :-
 	open(PFile,read,S),
 	read(S,C),
 	existsCex(S,C,Cex),
 	close(S),
-	checkCounterExample(Cex,F).
+	checkCounterExample(Cex,F, Result).
 	
 existsCex(_,end_of_file,no) :-
 	!.
@@ -28,12 +28,10 @@ existsCex(S,_,Cex) :-
 	read(S,C1),
 	existsCex(S,C1,Cex).
 	
-checkCounterExample(no,_) :-
+checkCounterExample(no,_, Result) :-
 	!,
-	write('No counterexamples: program is safe'),
-	nl,
-	halt(0).
-checkCounterExample(Cex,F) :-
+	Result=safe.
+checkCounterExample(Cex,F, Result) :-
 	start_ppl,
 	load_file(F),
 	(checkTrace([false],[],[Cex]);
@@ -41,14 +39,10 @@ checkCounterExample(Cex,F) :-
 	),
 	!,
 	end_ppl,
-	write('Program is unsafe'),
-	nl,
-	halt(0).
-checkCounterExample(_,_) :-
+	Result=unsafe.
+checkCounterExample(_,_, Result) :-
 	end_ppl,
-	write('Spurious counterexample'),
-	nl,
-	halt(1).
+	Result=unknown.
 	
 checkTrace([],_,_).
 checkTrace([B|Bs],Cs,[T|Ts]) :-

@@ -1,5 +1,7 @@
 % Generate an FTA from a program, and an error trace.
 
+% the error trace is passed in a file as an argument
+
 :- module(genfta,_).
 
 :- use_module(builtins).
@@ -14,11 +16,11 @@
 main(ArgV) :-
 	cleanup,
 	get_options(ArgV,Options,_),
-	setOptions(Options,File,OutS),
+	setOptions(Options,File, TraceFile, OutS),
 	load_file(File),
 	makeFTA,	
 	showFTA(OutS),
-	open('traceterm.out',read,S),  % error trace output of cha
+	open(TraceFile,read,S),  % error trace output of cha
 	readTerms(S,Ts),
 	close(S),
 	makeTraceFTAs(Ts,0,_,OutS),
@@ -52,10 +54,15 @@ get_options([X|T],Options,Args) :-
 
 recognised_option('-prg',  program(R),[R]).
 recognised_option('-o',    outputFile(R),[R]).
+recognised_option('-trace',    traceFile(R),[R]).
 
-setOptions(Options,File,OutS) :-
+setOptions(Options,File, TraceFile, OutS) :-
 	(member(program(File),Options); 
 			write(user_output,'No input file given.'),
+			nl(user_output), 
+			fail),
+    (member(traceFile(TraceFile),Options);
+			write(user_output,'No trace file given.'),
 			nl(user_output), 
 			fail),
 	(member(outputFile(OutFile),Options), open(OutFile,write,OutS); 
