@@ -21,7 +21,7 @@ Output: safe or unsafe.
 
 ## How to run:
 1. ciao src/rahft
-2. src/rahft <input file containing a set of Horn clauses> 
+2. src/rahft \<input file containing a set of Horn clauses\> 
 
 
 ## References:
