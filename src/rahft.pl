@@ -15,7 +15,6 @@
 :- use_module(counterExample, [main/1]).
 :- use_module(cpascc, [main/1]).
 :- use_module(qa, [main/1]).
-:- use_module(cha, [main/1]).
 :- use_module(insertProps, [main/1]).
 :- use_module(genfta, [main/1]).
 :- use_module(splitClauseIds, [main/1]).
