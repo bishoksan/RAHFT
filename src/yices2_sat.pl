@@ -1,8 +1,10 @@
 :- module(yices2_sat,_).
 
-:- use_module(ciao_yices_2).
 :- use_module(library(lists)).
 :- use_module(library(strings)).
+
+%:- use_module(ciao_yices_2).
+:-use_module(ciao_yices(ciao_yices_2)).
 
 
 yices_sat(E,Vars) :-

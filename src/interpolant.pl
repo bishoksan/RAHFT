@@ -27,7 +27,8 @@ computeInterpolant([B,D],[D>100,B=D-10],[D>90, D=<101,B>91],Ints),
 :- use_module(ppl_ops).
 :- use_module(linearize).
 :- use_module(yices2_sat).
-:- use_module(ciao_yices_2).
+%:- use_module(ciao_yices_2).
+:-use_module(ciao_yices(ciao_yices_2)).
 
 
 testall :-
