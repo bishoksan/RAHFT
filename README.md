@@ -27,3 +27,4 @@ Output: safe or unsafe.
 ## References:
 1. Horn clause verification with convex polyhedral abstraction and tree automata-based refinement by Bishoksan Kafle and John P. Gallagher in COMLAN 2015 (http://www.sciencedirect.com/science/article/pii/S1477842415000822). 
 2. Tree Automata-Based Refinement with Application to Horn Clause Verification by Bishoksan Kafle and John P. Gallagher in VMCAI 2015 (http://link.springer.com/chapter/10.1007%2F978-3-662-46081-8_12#page-1)
+3. Constraint Specialisation in Horn Clause Verification by Bishoksan Kafle and John P. Gallagher in PEPM 2015 (http://akira.ruc.dk/~kafle/publications/pepm-15)
