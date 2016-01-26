@@ -2,16 +2,15 @@
 
 :- module(checkSafety,_).
 
-
 safe(PFile) :-
 	open(PFile,read,S),
 	read(S,C),
-	(checkForFalse(S,C) -> 
-		close(S); 
-		close(S),
-		fail).
+	( checkForFalse(S,C) -> 
+	    close(S)
+	; close(S),
+	  fail
+	).
 
-	
 checkForFalse(_,end_of_file) :-
 	!.
 checkForFalse(S,(H:-_)) :-
@@ -29,8 +28,6 @@ main([F]) :-
 		write(': PROGRAM MIGHT NOT BE SAFE'),nl, halt(1)),
 	close(S).
 */
-
-
 
 checkSafety(F Result) :-
 	S = user_output,

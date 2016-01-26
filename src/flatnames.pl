@@ -5,8 +5,8 @@
 		initial_flatquery/2,
 		flatten_denotes/2]).
 
-:-use_module(library(lists)).
-:-use_module(builtins).
+:- use_module(library(lists)).
+:- use_module(builtins).
 
 flat_name(A,A) :-
 	sp_builtin(A),

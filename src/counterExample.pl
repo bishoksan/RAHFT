@@ -34,8 +34,8 @@ checkCounterExample(no,_, Result) :-
 checkCounterExample(Cex,F, Result) :-
 	start_ppl,
 	load_file(F),
-	(checkTrace([false],[],[Cex]);
-	 checkTrace([false_ans],[],[Cex])
+	( checkTrace([false],[],[Cex])
+	; checkTrace([false_ans],[],[Cex])
 	),
 	!,
 	end_ppl,

@@ -17,8 +17,7 @@ go(F,OutPFile) :-
 	
 main(ArgV) :-
 	cleanup,
-	write(user_output,'Starting ...'),
-	nl(user_output),
+	write(user_output, 'Starting ...'), nl(user_output),
 	setOptions(ArgV,File,OutS),
 	load_file(File),
 	add_false_clauses,
@@ -31,30 +30,28 @@ main(ArgV) :-
 	close(OutS),
 	ppl_finalize.
 
-	
 setOptions(ArgV,File,OutS) :-
 	get_options(ArgV,Options,_),
-	(member(programO(File),Options); 
-			write(user_output,'No input file given.'),nl(user_output)),
-	(member(outputFile(user_outout),Options) -> OutS=user_output;
-			member(outputFile(OutFile),Options), open(OutFile,write,OutS); 
-				OutS=user_output).
+	( member(programO(File),Options)
+	; write(user_output,'No input file given.'),nl(user_output)
+	),
+	( member(outputFile(user_outout),Options) ->
+	    OutS=user_output
+	; member(outputFile(OutFile),Options), open(OutFile,write,OutS)
+	; OutS=user_output
+	).
 
 % get_options/3 provided by Michael Leuschel
 get_options([],[],[]).
 get_options([X|T],Options,Args) :-
-   (recognised_option(X,Opt,Values) ->
-	  ( append(Values, Rest, T),
+	( recognised_option(X,Opt,Values) ->
+	    append(Values, Rest, T),
 	    RT = Rest,
 	    Options = [Opt|OT], Args = AT
-	  )
-   ;
-	  (
-	    Options = OT,	Args = [X|AT],
-	    RT = T
-	  )
-   ),
-   get_options(RT,OT,AT).
+	; Options = OT, Args = [X|AT],
+	  RT = T
+	),
+	get_options(RT,OT,AT).
 
 recognised_option('-prg',  programO(R),[R]).
 recognised_option('-o',    outputFile(R),[R]).
@@ -64,7 +61,7 @@ cleanup :-
 	retractall(my_clause(_,_,_)).
 	
 add_false_clauses :-
-	(my_clause(false,B,_); my_clause(false_ans,B,_)),
+	( my_clause(false,B,_) ; my_clause(false_ans,B,_) ),
 	separate_constraints(B,Cs,Bs),
 	negAtoms(Cs,Ns),
 	assert_false_clauses(Bs,Cs),
@@ -98,8 +95,6 @@ assert_each_atom_clause([],_).
 assert_each_atom_clause([C|Cs],B) :-
 	assert(my_clause(B,[C],x)),
 	assert_each_atom_clause(Cs,B).
-
-
 	
 operator:-
 	my_clause(Head,B,_),
@@ -122,20 +117,20 @@ solve(Xs,Cs,Hp) :-
 	
 dummyCList([],[]).
 dummyCList([C|Cs],[C=C|Cs1]) :-
-	   dummyCList(Cs,Cs1).
-	   
+	dummyCList(Cs,Cs1).
+
 record(Head,H):-
 	cond_assert(Head,H).
-	
+
 cond_assert(Head,H):-
 	\+ alreadyAsserted(Head,H),
 	assert(fact(Head,H)).
-		
+
 alreadyAsserted(Head,H) :-
 	fact(Head,H1), 
 	entails(H,H1),
 	entails(H1,H).
-	
+
 separate_constraints([],[],[]).
 separate_constraints([B|Bs],[C|Cs],Ds) :-
 	constraint(B,C),

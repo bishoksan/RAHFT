@@ -1,5 +1,5 @@
 /*
-It also generates path FTA, modidied by Bish on 21-01-2016
+It also generates path FTA, modified by Bish on 21-01-2016
 
 */
 
@@ -81,8 +81,8 @@ main(ArgV) :-
 	end_time(user_output),
 	!,
 	factFile(FactFile),
-    generateCEx,
-    ppl_finalize.
+	generateCEx,
+	ppl_finalize.
 
 
 generateCEx:-
@@ -186,7 +186,7 @@ operator(Head,B):-
 	dummyCList(Xs,DCLx),
 	dummyCList(Ys,DCLy),
 	append(DCLx,DCLy,DCL),
-    append(CsLinNOP,DCL,CsLin),
+	append(CsLinNOP,DCL,CsLin),
 	numbervars((Head:-CsLin),0,_),
 	satisfiable(CsLin,H1),
 	setdiff(Ys,Xs,Zs),
@@ -200,8 +200,8 @@ dummyCList([C|Cs],[C-C=0|Cs1]) :-
 
 changed(Bs) :- 
 	member(B,Bs),
-    isflagset(B),
-    !.
+	isflagset(B),
+	!.
 
 prove([],[]).
 prove([true],[]).
@@ -222,7 +222,7 @@ narrowOperator(Head,B):-
 	dummyCList(Xs,DCLx),
 	dummyCList(Ys,DCLy),
 	append(DCLx,DCLy,DCL),
-    append(CsLinNOP,DCL,CsLin),
+	append(CsLinNOP,DCL,CsLin),
 	numbervars((Head:-CsLin),0,_),
 	satisfiable(CsLin,H1),
 	setdiff(Ys,Xs,Zs),
@@ -242,14 +242,14 @@ switch_flags :-
 	true.
 
 isflagset(F) :-
-    functor(F,Fn,N),
-    currentflag(Fn/N).
+	functor(F,Fn,N),
+	currentflag(Fn/N).
 
 raise_flag(F):-
-    functor(F,Fn,N),
-	(nextflag(Fn/N) ->
-	true;  
-	assert(nextflag(Fn/N))
+	functor(F,Fn,N),
+	( nextflag(Fn/N) ->
+	    true
+	; assert(nextflag(Fn/N))
 	).
 
 record(F,H) :-
@@ -297,7 +297,7 @@ check_raise_flag(F,_,_) :-
 	raise_flag(F).
 
 getoldfact(B,Cs1) :-
-    functor(B,F,N),
+	functor(B,F,N),
 	functor(B1,F,N),
 	oldfact(B1,H),
 	ppl_Polyhedron_get_minimized_constraints(H,Cs2),
@@ -350,19 +350,21 @@ widenlist([Wc|Ws]) :-
 	widenlist(Ws).
 widenlist([Wc|Ws]) :-
 	functor(Wc,WcF,WcN),
-    widening_point(WcF/WcN,_,0),
-    retract(newfact(Wc,NewH)),
-    retract(oldfact(Wc,OldH)),
-    verbose_write(['Widening at ',Wc]),
-    wutwiden(Wc,NewH,OldH,H2),
-    assert(oldfact(Wc,H2)),
+	widening_point(WcF/WcN,_,0),
+	retract(newfact(Wc,NewH)),
+	retract(oldfact(Wc,OldH)),
+	verbose_write(['Widening at ',Wc]),
+	wutwiden(Wc,NewH,OldH,H2),
+	assert(oldfact(Wc,H2)),
 	widenlist(Ws).
 
 wutwiden(F,H0,H1,H2) :-
-    widenWRToptions(F,H0,H1),
+	widenWRToptions(F,H0,H1),
 	H2 = H0,
-	(equivalent(H1,H2) -> true;
-		raise_flag(F)).
+	( equivalent(H1,H2) ->
+	    true
+	; raise_flag(F)
+	).
 
 widenWRToptions(_,H0,H1) :-
 	widenf(nowut),
@@ -376,12 +378,14 @@ widenWRToptions(F,H0,H1) :-
 	widenUpto(H0,H1,Cns).
 
 widenPolyhedra(H0,H1) :-
-	widenf(bhrz03) -> widenPolyhedraBHRZ03(H0,H1);
-		widenPolyhedraH79(H0,H1).
+	( widenf(bhrz03) -> widenPolyhedraBHRZ03(H0,H1)
+	; widenPolyhedraH79(H0,H1)
+	).
 		
 widenUpto(H0,H1,Cs) :-
-	widenf(bhrz03) -> widenUptoBHRZ03(H0,H1,Cs);
-		widenUptoH79(H0,H1,Cs).
+	( widenf(bhrz03) -> widenUptoBHRZ03(H0,H1,Cs)
+	; widenUptoH79(H0,H1,Cs)
+	).
 
 getThresholds(F,Cout) :-
 	bagof(Cs,invariant(F,Cs),Clist),
@@ -396,11 +400,10 @@ flattenList([L|Ls],Lout) :-
 	
 %%% input threshold constraints %%%%
 readWutfacts:-
-    threshold('$NOTHRESHOLD'),
-    !.
-
+	threshold('$NOTHRESHOLD'),
+	!.
 readWutfacts :-
-    threshold(TFile),
+	threshold(TFile),
 	open(TFile,read,S),
 	read(S,C),
 	assertWutFacts(C,S),
@@ -472,18 +475,14 @@ dependency_graph(Es,Vs) :-
 % get_options/3 provided by Michael Leuschel
 get_options([],[],[]).
 get_options([X|T],Options,Args) :-
-   (recognised_option(X,Opt,Values) ->
-	 ( append(Values, Rest, T),
-	 RT = Rest,
-	 Options = [Opt|OT], Args = AT
-	 )
-   ;
-	 (
-	 Options = OT,	Args = [X|AT],
-	 RT = T
-	 )
-   ),
-   get_options(RT,OT,AT).
+	( recognised_option(X,Opt,Values) ->
+	    append(Values, Rest, T),
+	    RT = Rest,
+	    Options = [Opt|OT], Args = AT
+	; Options = OT, Args = [X|AT],
+	  RT = T
+	),
+	get_options(RT,OT,AT).
 
 recognised_option('-prg',programO(R),[R]).
 recognised_option('-widenpoints',widenP(R),[R]).
@@ -503,40 +502,58 @@ recognised_option('-threshold',thresholdFile(F),[F]).
 	
 set_options(Options,File,FactFile) :-
 	member(programO(File),Options),
-	(member(verbose,Options) -> assert(flag(verbose));
-		retractall(flag(verbose))),
-	(member(singlepoint,Options) -> assert(widenAt(singlepoint));
-		assert(widenAt(allpoints))),
-	(member(widenO(WOutput),Options) -> true;
-		WOutput='widencns'),
-	(member(widenF(WFunc),Options) -> assert(widenf(WFunc));
-		assert(widenf(h79))),
-	(member(detectwps(M),Options) -> assert(detectwps(M));
-		assert(detectwps(feedback))),
-    (member(thresholdFile(TFile),Options) -> assert(threshold(TFile));
-		assert(threshold('$NOTHRESHOLD'))),
-	(member(withwut,Options) -> 
-			assert(widenf(withwut)),readWutfacts,
-			(flag(verbose) -> write('Widening points: '),nl,showallwideningpoints;
-				true);
-		assert(widenf(nowut))),
-	(member(widenP(WPoints),Options) -> true;
-		WPoints='widenpoints'),
-	(member(narrowO(NOutput),Options) -> true;
-		NOutput='stdnarrowout'),
-	(member(factFile(FactFile),Options) -> true;
-		true),
-	(member(narrowiterationsO(Nit),Options) -> atom_number(Nit,NitN);
-		NitN is 0),
-	(member(delaywiden(DWit),Options) -> atom_number(DWit,DWitN);
-		DWitN is 0),
-    (member(counterExample(CexFile),Options) -> assert(cEx(CexFile));
-		assert(cEx('$NOCEX'))),
+	( member(verbose,Options) -> assert(flag(verbose))
+	; retractall(flag(verbose))
+	),
+	( member(singlepoint,Options) -> assert(widenAt(singlepoint))
+	; assert(widenAt(allpoints))
+	),
+	( member(widenO(WOutput),Options) -> true
+	; WOutput='widencns'
+	),
+	( member(widenF(WFunc),Options) -> assert(widenf(WFunc))
+	; assert(widenf(h79))
+	),
+	( member(detectwps(M),Options) -> assert(detectwps(M))
+	; assert(detectwps(feedback))
+	),
+	( member(thresholdFile(TFile),Options) -> assert(threshold(TFile))
+	; assert(threshold('$NOTHRESHOLD'))
+	),
+	( member(withwut,Options) ->
+	  assert(widenf(withwut)),
+	  readWutfacts,
+	  ( flag(verbose) ->
+	      write('Widening points: '),nl,
+	      showallwideningpoints
+	  ; true
+	  )
+	; assert(widenf(nowut))
+	),
+	( member(widenP(WPoints),Options) -> true
+	; WPoints='widenpoints'
+	),
+	( member(narrowO(NOutput),Options) -> true
+	; NOutput='stdnarrowout'
+	),
+	( member(factFile(FactFile),Options) -> true
+	; true
+	),
+	( member(narrowiterationsO(Nit),Options) -> atom_number(Nit,NitN)
+	; NitN is 0
+	),
+	( member(delaywiden(DWit),Options) -> atom_number(DWit,DWitN)
+	; DWitN is 0
+	),
+	( member(counterExample(CexFile),Options) -> assert(cEx(CexFile))
+	; assert(cEx('$NOCEX'))
+	),
 	assert(delays(DWitN)),
 	assert(narrowiterations(NitN)),
 	detectwps(WPSMethod),
-	(member(nowpscalc,Options) -> true;
-		wto_file(File,WPSMethod,WPoints)),
+	( member(nowpscalc,Options) -> true
+	; wto_file(File,WPSMethod,WPoints)
+	),
 	load_widenpoints(WPoints),
 	assert(outputfile(WOutput)).
 	
@@ -561,15 +578,13 @@ cleanWorkspace :-
 	retractall(detectwps(_)),
 	retractall(delays(_)),
 	retractall(clauseCount(_)),
-    retractall(versionCount(_)),
-    retractall(versiontransition(_,_)),
-    retractall(version(_,_,_)),
-    retractall(pathtransition(_)),
-    retractall(atomicproposition(_)),
-    retractall(cEx(_)),
+	retractall(versionCount(_)),
+	retractall(versiontransition(_,_)),
+	retractall(version(_,_,_)),
+	retractall(pathtransition(_)),
+	retractall(atomicproposition(_)),
+	retractall(cEx(_)),
 	retractall(narrowiterations(_)).
-
-
 	
 %%%% Output 
 
@@ -586,10 +601,10 @@ showallwideningpoints:-
 showallwideningpoints.
 
 factFile(user_output):-
-    !.
+	!.
 
 factFile(File) :-
-    open(File,write,Sout),
+	open(File,write,Sout),
 	%(File=user_output -> Sout=user_output; open(File,write,Sout)),
 	(oldfact(F,H),
 	ppl_Polyhedron_get_minimized_constraints(H,C),
@@ -602,8 +617,9 @@ factFile(File) :-
 	close(Sout)).
 
 verbose_write(Xs) :-
-	flag(verbose) -> verbose_write_list(Xs);
-		true.
+	( flag(verbose) -> verbose_write_list(Xs)
+	; true
+	).
 		
 verbose_write_list([]) :-
 	nl.
@@ -619,7 +635,7 @@ fact3(F,H,_) :-
 buildversions2 :-
 	assert(versionCount(0)),
 	fact3(F,H,_),
-    retract(versionCount(N1)),
+	retract(versionCount(N1)),
 	N is N1+1,
 	assert(versionCount(N)),
 	assert(version(F,H,N)),
@@ -628,7 +644,7 @@ buildversions2.
 
 versioniterate :-
 	assert(clauseCount(0)),
-    versionoperator,
+	versionoperator,
 	fail.
 versioniterate.
 
