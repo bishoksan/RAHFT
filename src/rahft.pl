@@ -7,7 +7,7 @@
 :- use_module(library(format), [format/2, format/3]).
 :- use_module(library(system_extra), [mkpath/1]).
 :- use_module(library(system)). % mktemp_in_tmp is available here
-:- use_module(library(pathnames), [path_basename/2, path_concat/3]).
+:- use_module(library(pathnames), [path_basename/2, path_concat/3, path_split/3]).
 :- use_module(library(terms), [atom_concat/2]).
 :- use_module(library(prolog_sys), [statistics/2]).
 
@@ -31,8 +31,9 @@
 % stores output of the tool
 logfile('result.txt').
 
-go :-
-	rahft:main(['/Users/kafle/Desktop/RAHFT/examples/running.nts.pl']).
+% (debug)
+% go :-
+% 	rahft:main(['/Users/kafle/Desktop/RAHFT/examples/running.nts.pl']).
 
 % ---------------------------------------------------------------------------
 % Horn clause pre-processing
@@ -67,6 +68,14 @@ verifyCPA(Prog, QAFile, QACPA, OutputFile, F_WidenPoints, F_Traceterm, F_Thresho
 	).
 
 % ---------------------------------------------------------------------------
+
+% (assume that determinise.jar is in the same directory as the executable)
+determinise_jar(Jar) :-
+	current_executable(ExecPath),
+	path_split(ExecPath, ExecDir, _),
+	path_concat(ExecDir, 'determinise.jar', Jar).
+
+% ---------------------------------------------------------------------------
 % Refinement
 % ---------------------------------------------------------------------------
 
@@ -78,7 +87,8 @@ refineHorn(F_SP, F_FTA, F_DFTA, F_SP, F_SPLIT, F_TRACETERM, F_REFINE, WithInterp
             interpolantAutomaton:main(['-prg', F_SP,  '-trace',  F_TRACETERM, '-o',  F_FTA])
 	; true
         ),
-	process_call('/usr/bin/java', ['-jar', '/Users/kafle/Desktop/RAHFT/src/determinise.jar', F_FTA, '-nodc', '-show', '-o', F_DFTA], []),
+	determinise_jar(DeterminiseJar),
+	process_call(path(java), ['-jar', DeterminiseJar, F_FTA, '-nodc', '-show', '-o', F_DFTA], []),
         format( "Find disjoint clauses ~n", []),
         splitClauseIds:main(['-prg', F_SP, '-o', F_SPLIT]),
         format( "Refining using DFTA ~n", []),
