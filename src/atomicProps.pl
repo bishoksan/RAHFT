@@ -10,11 +10,16 @@
 :- use_module(input_ppl_clausenum).
 :- use_module(ppl_ops).
 
+:- include(common).
+
 :- dynamic(fact/2).
 
 go(F,OutPFile) :-
 	main(['-prg',F,'-o',OutPFile]).
 	
+recognised_option('-prg', programO(R),[R]).
+recognised_option('-o',   outputFile(R),[R]).
+
 main(ArgV) :-
 	cleanup,
 	write(user_output, 'Starting ...'), nl(user_output),
@@ -40,21 +45,6 @@ setOptions(ArgV,File,OutS) :-
 	; member(outputFile(OutFile),Options), open(OutFile,write,OutS)
 	; OutS=user_output
 	).
-
-% get_options/3 provided by Michael Leuschel
-get_options([],[],[]).
-get_options([X|T],Options,Args) :-
-	( recognised_option(X,Opt,Values) ->
-	    append(Values, Rest, T),
-	    RT = Rest,
-	    Options = [Opt|OT], Args = AT
-	; Options = OT, Args = [X|AT],
-	  RT = T
-	),
-	get_options(RT,OT,AT).
-
-recognised_option('-prg',  programO(R),[R]).
-recognised_option('-o',    outputFile(R),[R]).
 
 cleanup :-
 	retractall(fact(_,_)),

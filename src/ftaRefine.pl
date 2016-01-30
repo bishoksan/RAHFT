@@ -6,11 +6,18 @@
 :- use_module(load_simple).
 :- use_module(linearize).
 
+:- include(common).
+
 :- dynamic transition/3.
 :- dynamic new_clause/2.
 :- dynamic statePred/3.
 :- dynamic nameCounter/1.
 :- dynamic split/1.
+
+recognised_option('-prg',  program(R),[R]).
+recognised_option('-fta',  ftaFile(R),[R]).
+recognised_option('-split',  splitFile(R),[R]).
+recognised_option('-o',    outputFile(R),[R]).
 
 main(ArgV) :-
 	cleanup,
@@ -23,27 +30,6 @@ main(ArgV) :-
 	makeExtraClauses,
 	writeClauses(OutS),
 	close(OutS).
-	
-% get_options/3 provided by Michael Leuschel
-get_options([],[],[]).
-get_options([X|T],Options,Args) :-
-   (recognised_option(X,Opt,Values) ->
-	  ( append(Values, Rest, T),
-	    RT = Rest,
-	    Options = [Opt|OT], Args = AT
-	  )
-   ;
-	  (
-	    Options = OT,	Args = [X|AT],
-	    RT = T
-	  )
-   ),
-   get_options(RT,OT,AT).
-
-recognised_option('-prg',  program(R),[R]).
-recognised_option('-fta',  ftaFile(R),[R]).
-recognised_option('-split',  splitFile(R),[R]).
-recognised_option('-o',    outputFile(R),[R]).
 
 setOptions(Options,File,FTA,OutS) :-
 	(member(program(File),Options); 

@@ -24,9 +24,8 @@ Chinese  Academy of Sciences.
 
 :-module(interpolantAutomaton, _).
 
-:-dynamic(interpolant/1).
-:-dynamic(ftaTransition/1).
-
+:- dynamic(interpolant/1).
+:- dynamic(ftaTransition/1).
 
 :- use_module(interpolant).
 :- use_module(linearize).
@@ -40,8 +39,13 @@ Chinese  Academy of Sciences.
 :- use_module(library(terms_vars)).
 :- use_module(library(ppl)).
 :- use_module(library(lists)).
-:-use_module(ciao_yices(ciao_yices_2)).
+:- use_module(ciao_yices(ciao_yices_2)).
 
+:- include(common).
+
+recognised_option('-prg',  programO(R),[R]).
+recognised_option('-trace', traces(R),[R]).
+recognised_option('-o',generateAut(R),[R]).
 
 go1:-
     ppl_initialize,
@@ -84,27 +88,6 @@ setOptions(ArgV,Input,Traces, OutS) :-
                 write(user_output,'No error trace file given.'),nl(user_output)),
     (member(generateAut(OutFile),Options), open(OutFile,append,OutS);
 			OutS=user_output).
-
-% get_options/3 provided by Michael Leuschel
-get_options([],[],[]).
-get_options([X|T],Options,Args) :-
-   (recognised_option(X,Opt,Values) ->
-	  ( append(Values, Rest, T),
-	    RT = Rest,
-	    Options = [Opt|OT], Args = AT
-	  )
-   ;
-	  (
-	    Options = OT,	Args = [X|AT],
-	    RT = T
-	  )
-   ),
-   get_options(RT,OT,AT).
-
-recognised_option('-prg',  programO(R),[R]).
-recognised_option('-trace', traces(R),[R]).
-recognised_option('-o',generateAut(R),[R]).
-
 
 %assume there is only one trace in the error trace file
 readErrorTrace(PFile, Traces):-

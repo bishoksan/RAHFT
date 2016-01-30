@@ -16,7 +16,7 @@
 :- use_module(myterms).
 :- use_module(flatnames).
 
-
+:- include(common).
 
 %% usage:  qa Infile -q "Query" [-o Outfile][-ans][-index][-builtin] 
 %% qa pumpStates1.pl -q "pumpSystem" -o qpumpStates.pl
@@ -46,6 +46,14 @@
 % The answers to predicates that only appear as the last call in clause
 % bodies are not needed.
 
+recognised_option('-index',index,[]).
+recognised_option('-ans',ans,[]).
+recognised_option('-builtin',builtin,[]).
+recognised_option('-query',query(Q),[Q]).
+recognised_option('-q',query(Q),[Q]).
+recognised_option('-o',output_file(F),[F]).
+recognised_option('-right',right,[]).
+
 main(ArgV) :-
 	get_options(ArgV,Options,[F|_]),
 	readprog(F,[_|Cs]),
@@ -60,34 +68,7 @@ outfileStream(Options,S) :-
 	!,
 	open(F1,write,S).
 outfileStream(_,user_output).
-
-
-	
-% get_options/3 provided by Michael Leuschel
-get_options([],[],[]).
-get_options([X|T],Options,Args) :-
-   (recognised_option(X,Opt,Values) ->
-       ( append(Values, Rest, T),
-	 RT = Rest,
-	 Options = [Opt|OT], Args = AT
-       )
-   ;
-       (
-	 Options = OT,     Args = [X|AT],
-	 RT = T
-       )
-   ),
-   get_options(RT,OT,AT).
-
    
-recognised_option('-index',index,[]).
-recognised_option('-ans',ans,[]).
-recognised_option('-builtin',builtin,[]).
-recognised_option('-query',query(Q),[Q]).
-recognised_option('-q',query(Q),[Q]).
-recognised_option('-o',output_file(F),[F]).
-recognised_option('-right',right,[]).
-
 getQuery(Options,[Q1]) :-
 	member(query(Q),Options),
 	!,

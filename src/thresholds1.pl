@@ -10,9 +10,13 @@
 :- use_module(input_ppl_clausenum).
 :- use_module(ppl_ops).
 
+:- include(common).
+
 :- dynamic(fact/2).
 :- dynamic(prop/2).
 
+recognised_option('-prg',  programO(R),[R]).
+recognised_option('-o',    outputFile(R),[R]).
 	
 main(ArgV) :-
 	cleanup,
@@ -25,7 +29,7 @@ main(ArgV) :-
 	atomicprops,
 	%facts2props,
 	%write('Writing out threshold facts'),
-	nl,
+	%nl,
 	showallprops(OutS),
 	nl(OutS),
 	close(OutS),
@@ -54,25 +58,6 @@ setOptions(ArgV,File,OutS) :-
 			write(user_output,'No input file given.'),nl(user_output)),
 	(member(outputFile(OutFile),Options), open(OutFile,write,OutS); 
 			OutS=user_output).
-
-% get_options/3 provided by Michael Leuschel
-get_options([],[],[]).
-get_options([X|T],Options,Args) :-
-   (recognised_option(X,Opt,Values) ->
-	  ( append(Values, Rest, T),
-	    RT = Rest,
-	    Options = [Opt|OT], Args = AT
-	  )
-   ;
-	  (
-	    Options = OT,	Args = [X|AT],
-	    RT = T
-	  )
-   ),
-   get_options(RT,OT,AT).
-
-recognised_option('-prg',  programO(R),[R]).
-recognised_option('-o',    outputFile(R),[R]).
 
 cleanup :-
 	retractall(fact(_,_)),

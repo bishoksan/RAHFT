@@ -1,12 +1,16 @@
 :- module(stripSuffix,_).
 
-
 :- use_module(library(lists)).
 :- use_module(timer_ciao).
+
+:- include(common).
 
 :- dynamic(prop/2).
 :- dynamic(atomicprops/0).
 
+recognised_option('-o',    outputFile(R),[R]).
+recognised_option('-props',propFile(R),[R]).
+recognised_option('-atoms',atomicprops,[]).
 	
 main(ArgV) :-
 	cleanup,
@@ -25,26 +29,6 @@ setOptions(ArgV,OutS) :-
 			true),
 	(member(atomicprops,Options), assert(atomicprops); 
 			true).
-
-% get_options/3 provided by Michael Leuschel
-get_options([],[],[]).
-get_options([X|T],Options,Args) :-
-   (recognised_option(X,Opt,Values) ->
-	  ( append(Values, Rest, T),
-	    RT = Rest,
-	    Options = [Opt|OT], Args = AT
-	  )
-   ;
-	  (
-	    Options = OT,	Args = [X|AT],
-	    RT = T
-	  )
-   ),
-   get_options(RT,OT,AT).
-
-recognised_option('-o',    outputFile(R),[R]).
-recognised_option('-props',propFile(R),[R]).
-recognised_option('-atoms',atomicprops,[]).
 
 cleanup :-
 	retractall(prop(_,_)),

@@ -1,9 +1,6 @@
-/*
-It also generates path FTA, modified by Bish on 21-01-2016
-
-*/
-
 :- module(cpascc,_).
+
+% It also generates path FTA, modified by Bish on 21-01-2016
 
 :- use_module(setops).
 :- use_module(canonical).
@@ -17,6 +14,7 @@ It also generates path FTA, modified by Bish on 21-01-2016
 :- use_module(ppl_ops).
 :- use_module(scc).
 
+:- include(common).
 
 :- dynamic(flag/1).
 :- dynamic(currentflag/1).
@@ -58,6 +56,22 @@ go2(FileIn,FileOut) :-
 		'-wfunc','h79',
 		'-o',FileOut]).
 			
+recognised_option('-prg',programO(R),[R]).
+recognised_option('-widenpoints',widenP(R),[R]).
+recognised_option('-widenout',widenO(R),[R]).
+recognised_option('-narrowout',narrowO(R),[R]).
+recognised_option('-narrowiterations',narrowiterationsO(R),[R]).
+recognised_option('-delaywidening',delaywiden(R),[R]).
+recognised_option('-wfunc',widenF(F),[F]).
+recognised_option('-v',verbose,[]).
+recognised_option('-querymodel',querymodel(Q),[Q]).
+recognised_option('-nowpscalc',nowpscalc,[]).
+recognised_option('-withwut',withwut,[]).
+recognised_option('-detectwps',detectwps(M),[M]).
+recognised_option('-o',factFile(F),[F]).
+recognised_option('-cex',counterExample(F),[F]).
+recognised_option('-threshold',thresholdFile(F),[F]).
+	
 main(['-prg',FileIn]) :-
 	!,
 	go(FileIn).		
@@ -472,34 +486,6 @@ dependency_graph(Es,Vs) :-
 
 %%%% Getting and setting options
 
-% get_options/3 provided by Michael Leuschel
-get_options([],[],[]).
-get_options([X|T],Options,Args) :-
-	( recognised_option(X,Opt,Values) ->
-	    append(Values, Rest, T),
-	    RT = Rest,
-	    Options = [Opt|OT], Args = AT
-	; Options = OT, Args = [X|AT],
-	  RT = T
-	),
-	get_options(RT,OT,AT).
-
-recognised_option('-prg',programO(R),[R]).
-recognised_option('-widenpoints',widenP(R),[R]).
-recognised_option('-widenout',widenO(R),[R]).
-recognised_option('-narrowout',narrowO(R),[R]).
-recognised_option('-narrowiterations',narrowiterationsO(R),[R]).
-recognised_option('-delaywidening',delaywiden(R),[R]).
-recognised_option('-wfunc',widenF(F),[F]).
-recognised_option('-v',verbose,[]).
-recognised_option('-querymodel',querymodel(Q),[Q]).
-recognised_option('-nowpscalc',nowpscalc,[]).
-recognised_option('-withwut',withwut,[]).
-recognised_option('-detectwps',detectwps(M),[M]).
-recognised_option('-o',factFile(F),[F]).
-recognised_option('-cex',counterExample(F),[F]).
-recognised_option('-threshold',thresholdFile(F),[F]).
-	
 set_options(Options,File,FactFile) :-
 	member(programO(File),Options),
 	( member(verbose,Options) -> assert(flag(verbose))

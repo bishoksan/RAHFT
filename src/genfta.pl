@@ -1,8 +1,7 @@
-% Generate an FTA from a program, and an error trace.
-
-% the error trace is passed in a file as an argument
-
 :- module(genfta,_).
+
+% Generate an FTA from a program, and an error trace.
+% The error trace is passed in a file as an argument.
 
 :- use_module(builtins).
 
@@ -10,8 +9,13 @@
 :- use_module(load_simple).
 :- use_module(linearize).
 
+:- include(common).
 
 :- dynamic transition/2.
+
+recognised_option('-prg',   program(R),[R]).
+recognised_option('-o',     outputFile(R),[R]).
+recognised_option('-trace', traceFile(R),[R]).
 
 main(ArgV) :-
 	cleanup,
@@ -36,26 +40,6 @@ makeTraceFTAs([_|Ts],K0,K1,OutS) :-
 	makeTraceFTAs(Ts,K0,K1,OutS).
 makeTraceFTAs([],K,K,_).
 	
-% get_options/3 provided by Michael Leuschel
-get_options([],[],[]).
-get_options([X|T],Options,Args) :-
-   (recognised_option(X,Opt,Values) ->
-	  ( append(Values, Rest, T),
-	    RT = Rest,
-	    Options = [Opt|OT], Args = AT
-	  )
-   ;
-	  (
-	    Options = OT,	Args = [X|AT],
-	    RT = T
-	  )
-   ),
-   get_options(RT,OT,AT).
-
-recognised_option('-prg',  program(R),[R]).
-recognised_option('-o',    outputFile(R),[R]).
-recognised_option('-trace',    traceFile(R),[R]).
-
 setOptions(Options,File, TraceFile, OutS) :-
 	(member(program(File),Options); 
 			write(user_output,'No input file given.'),

@@ -10,9 +10,15 @@
 :- use_module(input_ppl_clausenum).
 :- use_module(ppl_ops).
 
+:- include(common).
+
 :- dynamic(fact/2).
 :- dynamic(prop/2).
 :- dynamic(pe_clause/2).
+
+recognised_option('-prg',  programO(R),[R]).
+recognised_option('-props',  propFile(R),[R]).
+recognised_option('-o',    outputFile(R),[R]).
 
 main(ArgV) :-
 	cleanup,
@@ -38,26 +44,6 @@ setOptions(ArgV,File,OutS) :-
 				OutS=user_output),
 	(member(propFile(PFile),Options), readPropFile(PFile); 
 			true).
-
-% get_options/3 provided by Michael Leuschel
-get_options([],[],[]).
-get_options([X|T],Options,Args) :-
-   (recognised_option(X,Opt,Values) ->
-	  ( append(Values, Rest, T),
-	    RT = Rest,
-	    Options = [Opt|OT], Args = AT
-	  )
-   ;
-	  (
-	    Options = OT,	Args = [X|AT],
-	    RT = T
-	  )
-   ),
-   get_options(RT,OT,AT).
-
-recognised_option('-prg',  programO(R),[R]).
-recognised_option('-props',  propFile(R),[R]).
-recognised_option('-o',    outputFile(R),[R]).
 
 cleanup :-
 	retractall(fact(_,_)),
