@@ -1,12 +1,14 @@
-:- module(wto, [main/1,wto/6,wto_file/3]).
+:- module(wto, [main/1,wto/6,wto_file/3], []).
 
 % Finding widening points.  See Bourdoncle 1993.
 
 % Changes: depth+breadth first travesal
 %          Only add wideningpoint if no widening point exists on path
 
-:- use_module(balanced_tree).
 :- use_module(library(lists)).
+:- use_module(library(write)).
+:- use_module(library(aggregates)).
+:- use_module(balanced_tree).
 :- use_module(builtins).
 :- use_module(setops).
 :- use_module(readprog).

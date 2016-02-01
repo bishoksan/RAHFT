@@ -1,9 +1,11 @@
-:- module(input_ppl_clausenum,[load_file/1,my_clause/3]).
+:- module(input_ppl_clausenum,[load_file/1,my_clause/3],[]).
 
 :- dynamic my_clause/3.
 
-:- use_module(duplVar).
+:- use_module(library(dynamic)).
+:- use_module(library(read)).
 :- use_module(library(lists)).
+:- use_module(duplVar).
 
 load_file(F) :-
     retractall(my_clause(_,_,_)),

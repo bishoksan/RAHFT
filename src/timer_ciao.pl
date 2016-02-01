@@ -1,5 +1,6 @@
-:- module(timer_ciao, [start_time/0, end_time/1, end_time/2]).
+:- module(timer_ciao, [start_time/0, end_time/1, end_time/2], []).
 
+:- use_module(library(write)).
 :- use_module(library(prolog_sys)).
 
 start_time :-

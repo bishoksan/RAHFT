@@ -1,11 +1,15 @@
-:- module(yices2_sat,_).
+:- module(yices2_sat, [
+	yices_sat/2,
+	yices_unsat/2,
+	yices_model/3,
+	true_in_model/2,
+	get_value_as_term/3], []).
 
+:- use_module(library(write)).
 :- use_module(library(lists)).
 :- use_module(library(strings)).
 
-%:- use_module(ciao_yices_2).
-:-use_module(ciao_yices(ciao_yices_2)).
-
+:- use_module(ciao_yices(ciao_yices_2)).
 
 yices_sat(E,Vars) :-
 	expr2yices(E,Y),

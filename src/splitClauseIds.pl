@@ -1,5 +1,9 @@
-:- module(splitClauseIds,_).
+:- module(splitClauseIds, [main/1], []).
 
+:- use_module(library(read)).
+:- use_module(library(write)).
+:- use_module(library(dynamic)).
+:- use_module(library(aggregates)).
 :- use_module(setops).
 :- use_module(linearize).
 :- use_module(library(terms_vars)).

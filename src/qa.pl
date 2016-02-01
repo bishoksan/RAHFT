@@ -7,8 +7,10 @@
 	indexQueryClauses/3,
 	addInitQueries/3,
 	addIndexInitQueries/3,
-	makeIndexedAtom/5]).
-	
+	makeIndexedAtom/5], []).
+
+:- use_module(library(read)).
+:- use_module(library(write)).
 :- use_module(library(lists)).
 :- use_module(builtins).
 :- use_module(readprog).
@@ -316,7 +318,8 @@ joingoals(X,Xs,(X,Xs)) :-
         X =.. [F|_],
         F \== ','.
 
-	
+:- use_module(library(system), [system/1]).
+
 convertQueryString(Q,Q1) :-
         open('/tmp/querystring',write,S),
         write(S,Q),

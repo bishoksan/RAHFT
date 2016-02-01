@@ -1,6 +1,4 @@
-:- module(duplVar, _).
-
-:- use_module(library(lists)).
+:- module(duplVar, [writeAtomEq/4], []).
 
 %?- writeAtomEq(p(U,U,V,U,V,W),A,Es).
 

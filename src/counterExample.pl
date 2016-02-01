@@ -1,5 +1,8 @@
-:- module(counterExample,[checkCounterExample/3, main/1]).
+:- module(counterExample, [checkCounterExample/3, main/1], []).
 
+:- use_module(library(read)).
+:- use_module(library(write)).
+:- use_module(library(lists)).
 :- use_module(linearize).
 :- use_module(ppl_ops).
 :- use_module(input_ppl_clausenum).

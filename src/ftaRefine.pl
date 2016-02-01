@@ -1,7 +1,10 @@
-:- module(ftaRefine,_).
+:- module(ftaRefine, [main/1], []).
 
 :- use_module(builtins).
 
+:- use_module(library(write)).
+:- use_module(library(dynamic)).
+:- use_module(library(read)).
 :- use_module(library(lists)).
 :- use_module(load_simple).
 :- use_module(linearize).

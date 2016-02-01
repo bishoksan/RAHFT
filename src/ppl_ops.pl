@@ -1,4 +1,28 @@
-:- module(ppl_ops,_).
+:- module(ppl_ops, [
+	start_ppl/0,
+	end_ppl/0,
+	getConstraint/2,
+	makePolyhedron/2,
+	copyPolyhedron/2,
+	satisfiable/2,
+	project/3,
+	equivalent/2,
+	disjointFrom/2,
+	entails/2,
+	consistent/2,
+	convhull/3,
+	widenPolyhedraH79/2,
+	widenPolyhedraBHRZ03/2,
+	widenUptoH79/3,
+	widenUptoBHRZ03/3,
+	isEmpty/1,
+	mapCoords/2,
+	rankingFunction_PR/2,
+	rankingFunction_MS/2,
+	polyhedronDimension/2,
+	maximizeExpr/4,
+	dropNonIntegerPoint/1
+], []).
 
 :- use_module(library(ppl)).
 

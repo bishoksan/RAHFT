@@ -1,6 +1,4 @@
-:- module(linearize,[linearize/2, constraint/2, linear_constraint/1]).
-
-
+:- module(linearize,[linearize/2, constraint/2, linear_constraint/1], []).
 	
 %%%%%%%%%%%%
 %

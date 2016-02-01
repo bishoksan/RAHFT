@@ -4,7 +4,7 @@
 			    makeset/2,
 			    subset/2,
 			    insertVal/3
-			   ]).
+			   ], []).
 			   
 :- use_module(library(lists)).
 

@@ -1,10 +1,13 @@
-:- module(genfta,_).
+:- module(genfta, [main/1], []).
 
 % Generate an FTA from a program, and an error trace.
 % The error trace is passed in a file as an argument.
 
 :- use_module(builtins).
 
+:- use_module(library(write)).
+:- use_module(library(read)).
+:- use_module(library(dynamic)).
 :- use_module(library(lists)).
 :- use_module(load_simple).
 :- use_module(linearize).

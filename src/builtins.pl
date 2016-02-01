@@ -1,4 +1,4 @@
-:- module(builtins, [sp_builtin/1, builtin/1]).
+:- module(builtins, [sp_builtin/1, builtin/1], []).
 
 sp_builtin(G) :-
 	functor(G,F,N),

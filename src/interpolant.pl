@@ -1,18 +1,23 @@
-/*
-The predicate interpolant/4 computes an interpolant of two sets of contraints which are unsat together.
+% 
+% The predicate interpolant/4 computes an interpolant of two sets of
+% contraints which are unsat together.
+% 
+% The implementation is based on the algorithm presented in the paper:
+% Constraint Solving for Interpolation by Andrey Rybalchenko and Viorica
+% Sofronie-Stokkermans (VMCAI'07)
+% 
+% Implementation: for 2nd and 3rd branch, we take One of LambdaLt >0 or
+% One of MuLt >0
+% 
+% This example gives is not captured by any one of the three branch in
+% the algorithm if we do not use equality constraints over integers.
+% 
+% computeInterpolant([B,D],[D>100,B=D-10],[D>90, D=<101,B>91],Ints),
+%
 
-The implementation is based on the algorithm presented in the paper: Constraint Solving for Interpolation
-by Andrey Rybalchenko and Viorica Sofronie-Stokkermans (VMCAI'07)
+:- module(interpolant, [makeRealVars/2, computeInterpolant/4], []).
 
-Implementation: for 2nd and 3rd branch, we take One of LambdaLt >0 or One of MuLt >0
-
-
-This example gives is not captured by any one of the three branch in the algorithm if we do not use equality
-constraints over integers.
-computeInterpolant([B,D],[D>100,B=D-10],[D>90, D=<101,B>91],Ints),
-*/
-
-:- module(interpolant,_).
+:- use_module(library(write)).
 
 :- use_module(library(ppl)).
 :- use_module(library(terms_vars)).

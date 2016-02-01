@@ -1,6 +1,11 @@
-:- module(cpascc,_).
+:- module(cpascc, [main/1], []).
 
 % It also generates path FTA, modified by Bish on 21-01-2016
+
+:- use_module(library(read)).
+:- use_module(library(write)).
+:- use_module(library(aggregates)).
+:- use_module(library(dynamic)).
 
 :- use_module(setops).
 :- use_module(canonical).

@@ -1,10 +1,14 @@
-:- module(input_ppl,[load_file/2,my_clause/2]).
+:- module(input_ppl, [load_file/2,my_clause/2], []).
+
+:- use_module(library(lists)).
+:- use_module(library(read)).
+:- use_module(library(dec10_io)).
+:- use_module(library(dynamic)).
+:- use_module(duplVar).
 
 :- dynamic my_clause/2.
 
 :- dynamic inputtype/1.
-:- use_module(duplVar).
-:- use_module(library(lists)).
 
 load_file(F,Type) :-
     retractall(my_clause(_,_)),

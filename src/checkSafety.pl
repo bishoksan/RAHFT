@@ -1,6 +1,4 @@
-:- module(checkSafety, [checkSafety/2]).
-
-:- module(checkSafety,_).
+:- module(checkSafety, [checkSafety/2], []).
 
 safe(PFile) :-
 	open(PFile,read,S),
@@ -29,7 +27,7 @@ main([F]) :-
 	close(S).
 */
 
-checkSafety(F Result) :-
+checkSafety(F, Result) :-
 	S = user_output,
 	write(S,F), 
 	( safe(F, K) ->

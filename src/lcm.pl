@@ -1,12 +1,11 @@
-:- module(lcm,_).
+:- module(lcm, [transf/2], []).
 
 :- use_module(library(lists)).
 
-test:-
-
-    numbervars(C, 0, _),
-    transf(-(1/9)*C=< -(1), R),
-    write(R).
+% test:-
+% 	numbervars(C, 0, _),
+% 	transf(-(1/9)*C=< -(1), R),
+% 	write(R).
 
 lcmList([X],X).
 lcmList([X,Y|Xs],N) :-

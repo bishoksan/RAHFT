@@ -1,5 +1,8 @@
-:- module(stripSuffix,_).
+:- module(stripSuffix, [main/1], []).
 
+:- use_module(library(dynamic)).
+:- use_module(library(write)).
+:- use_module(library(read)).
 :- use_module(library(lists)).
 :- use_module(timer_ciao).
 

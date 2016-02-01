@@ -4,7 +4,7 @@
 		   search_replace_tree/5,
 		   traverse_tree/2,
 		   traverseVal_tree/2,
-		   traversekey_tree/2]).
+		   traversekey_tree/2], []).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Insertion and search in 234-trees.  %

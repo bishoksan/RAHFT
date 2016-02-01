@@ -1,4 +1,6 @@
-:- module(xmlize, [xmlize/1, xmlize/2, xmlOutput/3, xmlHeader/1]).
+:- module(xmlize, [xmlize/1, xmlize/2, xmlOutput/3, xmlHeader/1], []).
+
+:- use_module(library(write)).
 
 xmlize(T,F) :-
 	open(F,write,S),

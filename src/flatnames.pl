@@ -3,7 +3,7 @@
 		flat_flatnames/2,
 		indexed_flatname/4,
 		initial_flatquery/2,
-		flatten_denotes/2]).
+		flatten_denotes/2], []).
 
 :- use_module(library(lists)).
 :- use_module(builtins).

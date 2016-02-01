@@ -4,7 +4,7 @@
 		scc_graph/3, 
 		scc_sharir/2,
 		makeGraph/3,
-		reducedGraph/3]).
+		reducedGraph/3], []).
 
 % Strongly connected components based
 % on depth-first search of a graph.
@@ -12,14 +12,12 @@
 % Baase and Van Gelder, Chapter 7.5
 % JPG 20/8/01
 
-
+:- use_module(library(write)).
 :- use_module(readprog).
 :- use_module(balanced_tree).
 :- use_module(library(lists)).
 :- use_module(builtins).
 :- use_module(setops).
-
-
 
 % scc(Ps,Prog,Cs):   
 % scc(+,+,-):

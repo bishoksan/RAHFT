@@ -3,7 +3,9 @@
 	 canonical_each/1,
 	 melt/2, 
 	 melteach/2,
-	 variable/1]).
+	 variable/1], []).
+
+:- use_module(library(write), [numbervars/3]).
 
 canonical(T) :-
 	numbervars(T,0,_).

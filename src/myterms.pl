@@ -6,7 +6,7 @@
 		instanceIndex1/2,
 		removeDupls/2,
 		pruneAtoms/2,
-		pruneSolns/2]).
+		pruneSolns/2], []).
 
 %%%CIAO/*
 :- use_module(library(terms_check)).
@@ -16,9 +16,9 @@
 :- use_module(library(terms)).
 */%%%SICS
 :- use_module(library(lists)).
+:- use_module(library(aggregates)).
+:- use_module(library(sort)).
 :- use_module(canonical).
-
-
 
 copyterm(X,Y) :-
 	findall(X,X=_,[Y]).

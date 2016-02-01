@@ -1,9 +1,11 @@
-:- module(checkFalseInFile,[load_file/1,my_clause/3, checkForFalse/2]).
+:- module(checkFalseInFile,[load_file/1,my_clause/3, checkForFalse/2], []).
 
 :- dynamic my_clause/3.
 
 :- use_module(duplVar).
 :- use_module(library(lists)).
+:- use_module(library(dynamic)).
+:- use_module(library(read)).
 
 %check the presence of false int the clauses, if not present returns "safe" otherwise unknown
 checkForFalse(F, Result):-

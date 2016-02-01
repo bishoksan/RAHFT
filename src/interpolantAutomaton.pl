@@ -1,31 +1,35 @@
-/*
+% 
+% Special attention: the output file is append (not write) which works
+% only in this setting.
+% 
+% computes interpolant automata from a given set of Horn clauses and an
+% error trace.
+% 
+% The error trace is given in the form counterexample(TraceTerm) e.g.
+% 
+% counterexample(c1(c2(c14(c16(c16(c16(c16(c17(c19(c23(c27(c31(c5(c7(c10(c12))))))))))))))))
+% 
+% Implementation Details:
+% 
+% 1. Tree interpolation algorithm is adapted from the paper by Régis
+% Blanc, Ashutosh Gupta, Laura Kovács, Bernhard Kragl: Tree
+% Interpolation in Vampire. LPAR 2013: 173-181
+% 
+% 2. Interpolant automata is based on the paper by: Weifeng Wang and Li
+% Jiao: Trace Abstraction Refinement for Solving Horn Clauses Technical
+% report Nr. ISCAS-SKLCS-15-19,State Key Laboratory of Computer Science,
+% Institute of Software, Chinese Academy of Sciences.
+% 
 
-Special attention: the output file is append (not write) which works only in this setting.
-
-computes interpolant automata from a given set of Horn clauses and an error trace.
-
-The error trace is given in the form counterexample(TraceTerm) e.g.
-counterexample(c1(c2(c14(c16(c16(c16(c16(c17(c19(c23(c27(c31(c5(c7(c10(c12))))))))))))))))
-
-Implementation Details:
-
-1. Tree interpolation algorithm is adapted from  the paper by
-Régis Blanc, Ashutosh Gupta, Laura Kovács, Bernhard Kragl:
-Tree Interpolation in Vampire. LPAR 2013: 173-181
-
-2. Interpolant automata is based on the paper by:
-Weifeng Wang and Li Jiao:
-Trace Abstraction Refinement for Solving Horn Clauses
-Technical report Nr. ISCAS-SKLCS-15-19,State Key Laboratory of Computer Science,  Institute of Software,
-Chinese  Academy of Sciences.
-
-
-*/
-
-:-module(interpolantAutomaton, _).
+:- module(interpolantAutomaton, [main/1], []).
 
 :- dynamic(interpolant/1).
 :- dynamic(ftaTransition/1).
+
+:- use_module(library(write)).
+:- use_module(library(read)).
+:- use_module(library(dynamic)).
+:- use_module(library(aggregates)).
 
 :- use_module(interpolant).
 :- use_module(linearize).

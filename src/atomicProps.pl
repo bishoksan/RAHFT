@@ -1,5 +1,7 @@
-:- module(atomicProps,_).
+:- module(atomicProps,[main/1],[]).
 
+:- use_module(library(write)).
+:- use_module(library(dynamic)).
 :- use_module(setops).
 :- use_module(canonical).
 :- use_module(linearize).

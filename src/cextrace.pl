@@ -1,9 +1,10 @@
-:- module(cextrace,_).
+:- module(cextrace, [main/1], []).
 
+:- use_module(library(read)).
+:- use_module(library(write)).
 :- use_module(linearize).
 :- use_module(ppl_ops).
 :- use_module(input_ppl_clausenum).
-
 
 main([F,PFile]) :-
 	open(PFile,read,S),

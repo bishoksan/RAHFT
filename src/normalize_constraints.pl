@@ -1,5 +1,8 @@
 % converts const into AX<=b
-:- module(normalize_constraints,_).
+:- module(normalize_constraints, _, []).
+
+:- use_module(library(write)).
+:- use_module(library(lists)).
 
 go:-
     numbervars(A,0,_),

@@ -1,5 +1,9 @@
-:- module(thresholds1,_).
+:- module(thresholds1, [main/1], []).
 
+:- use_module(library(read)).
+:- use_module(library(write)).
+:- use_module(library(dynamic)).
+:- use_module(library(aggregates)).
 :- use_module(setops).
 :- use_module(canonical).
 :- use_module(linearize).

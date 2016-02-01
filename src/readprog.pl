@@ -9,7 +9,7 @@
 		writeClauses/2,
 		writeClausespic/2,
 		applyVarNames/1,
-		writeTerms/2]).
+		writeTerms/2], []).
 
 
 :- op(750,fx,type).
@@ -48,6 +48,8 @@
 
 :- op(1150, fx, entry).
 
+:- use_module(library(read)).
+:- use_module(library(write)).
 :- use_module(library(lists)).
 :- use_module(builtins).
 :- use_module(myterms).

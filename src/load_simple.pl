@@ -1,8 +1,10 @@
-:- module(load_simple,[load_file/1,my_clause/3]).
+:- module(load_simple, [load_file/1,my_clause/3], []).
 
 :- dynamic my_clause/3.
 
 :- use_module(library(lists)).
+:- use_module(library(dynamic)).
+:- use_module(library(read)).
 
 load_file(F) :-
     retractall(my_clause(_,_,_)),
