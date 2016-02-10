@@ -19,23 +19,39 @@ manipulating finite tree automata.
    --contrib:with_ppl=yes --contrib:auto_install_ppl=yes`)
 2. Ciao bindings for [Yices SMT solver](http://yices.csl.sri.com/) (`ciao get github.com/jfmc/ciao_yices`)
 
-## Input and output:
+## Build and installation
 
-Input: a set of Horn clauses together with integrity constraints. They
+You can automatically fetch, build, and install RAHFT using:
+
+    ciao get github.com/bishoksan/RAHFT
+
+Binaries will be placed in the `build/bin` directory relative to the
+Ciao workspace directory specified by the `CIAOPATH` environment
+variable (hidden `~/.ciao` if undefined).
+
+For developing RAHFT it is recommended to define `CIAOPATH` (E.g.,
+`~/ciao`) and clone this repository in your workspace.
+
+To call the `rahft` command without specifying its full path it is
+recommended to include in your `PATH` (replace `CIAOPATH` with
+`~/.ciao` if undefined):
+
+    export PATH=$CIAOPATH/build/bin:$PATH
+
+## Input and output
+
+**Input**: a set of Horn clauses together with integrity constraints. They
 are written using Prolog notation:
 
 e.g. a clause is written as: `h(X):- C, b1(X1),...,bn(Xn).`
 
 and an integrity constriant is written as `false :- C, b1(X1),...,bn(Xn).`
 
-Output: safe or unsafe.
+**Output**: safe or unsafe.
 
-## How to run:
+**How to run**: `rahft` \<*input file containing a set of Horn clauses*\>
 
-1. `ciaoc src/rahft`
-2. `src/rahft` \<`input file containing a set of Horn clauses`\>
-
-## References:
+## References
 
 1. Horn clause verification with convex polyhedral abstraction and
    tree automata-based refinement by Bishoksan Kafle and John
