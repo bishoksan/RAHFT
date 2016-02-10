@@ -12,7 +12,7 @@
 
 load_file(F,Type) :-
     retractall(my_clause(_,_)),
-    assert(inputtype(Type)),
+    assertz(inputtype(Type)),
 	see(F),
 	remember_all,
 	seen.
@@ -40,7 +40,7 @@ remember_clause((A :- B)) :-
 	ACs1=Es0,
 	Es1=BCs0,
 	BCs1=BL0,
-	assert(my_clause(Anodupl,ACs0)).
+	assertz(my_clause(Anodupl,ACs0)).
 
 remember_clause(A) :-
    (inputtype(pic) -> true, keepclauses(A)
@@ -50,7 +50,7 @@ remember_clause(A) :-
     atomconstraints(A, ACs0, ACs1, Ant),
 	writeAtomEq(Ant,Anodupl,Es0,[]),
 	ACs1=Es0,
-	assert(my_clause(Anodupl,ACs0)).
+	assertz(my_clause(Anodupl,ACs0)).
 
 %Drop all non-execute/specialize clauses
 remember_clause(_).

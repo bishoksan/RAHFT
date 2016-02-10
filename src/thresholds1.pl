@@ -85,7 +85,7 @@ preds([]).
 assert_top_values([]).
 assert_top_values([P/N|Ps]) :-
 	functor(A,P,N),
-	assert(prop(A,[])),
+	assertz(prop(A,[])),
 	assert_top_values(Ps).
 	
 atomicprops :-
@@ -113,7 +113,7 @@ facts2props :-
 	fact(A,H),
 	getConstraint(H,Cs),
 	melt(prop(A,Cs),Prop),
-	assert(Prop),
+	assertz(Prop),
 	fail.
 facts2props.
 	
@@ -132,7 +132,7 @@ checkAssert(P) :-
 	!.
 checkAssert(P) :-
 	melt(P, Prop),
-	assert(Prop).
+	assertz(Prop).
 	
 existingProp(prop(B,C)) :-
 	prop(B,C).
@@ -155,7 +155,7 @@ abstract([P/N|Ps]) :-
 	convexhull([H1|Hs],H2),
 	retractall(fact(A,_)),
 	numbervars(A,0,_),
-	assert(fact(A,H2)),
+	assertz(fact(A,H2)),
 	abstract(Ps).
 abstract([_|Ps]) :-
 	abstract(Ps).
@@ -190,7 +190,7 @@ record(Head,H):-
 	
 cond_assert(Head,H):-
 	\+ alreadyAsserted(Head,H),
-	assert(fact(Head,H)).
+	assertz(fact(Head,H)).
 		
 alreadyAsserted(Head,H) :-
 	fact(Head,H1), 

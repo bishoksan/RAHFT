@@ -124,12 +124,12 @@ generateCEx:-
 
 iterate([(non_recursive,P)|SCCs]) :-
 	verbose_write(['Non-recursive component ',P]),
-	(flag(first) -> true; assert(flag(first))),
+	(flag(first) -> true; assertz(flag(first))),
 	non_recursive_scc(P),
 	iterate(SCCs).
 iterate([(recursive,Ps)|SCCs]) :-
 	verbose_write(['Recursive component ',Ps]),
-	(flag(first) -> true; assert(flag(first))),
+	(flag(first) -> true; assertz(flag(first))),
 	recursive_scc(Ps),
 	iterate(SCCs).
 iterate([]).
@@ -138,7 +138,7 @@ non_recursive_scc(P) :-
 	convexhull_operation(P),
 	retract(operatorcount(X)),
 	Y is X + 1,
-	assert(operatorcount(Y)),
+	assertz(operatorcount(Y)),
 	%write('-'),write(X),
 	newoldfacts,
 	switch_flags.
@@ -147,7 +147,7 @@ recursive_scc(Ps) :-
 	convexhull_operation(Ps),
 	retract(operatorcount(X)),
 	Y is X + 1,
-	assert(operatorcount(Y)),
+	assertz(operatorcount(Y)),
 	%write('-'),write(X),
 	retractall(flag(first)),
 	fail.
@@ -255,7 +255,7 @@ narrowOperator(Head,B):-
 switch_flags :-
 	retractall(currentflag(_/_)),
 	retract(nextflag(F/N)),
-	assert(currentflag(F/N)),
+	assertz(currentflag(F/N)),
 	fail.
 switch_flags :-
 	true.
@@ -268,7 +268,7 @@ raise_flag(F):-
 	functor(F,Fn,N),
 	( nextflag(Fn/N) ->
 	    true
-	; assert(nextflag(Fn/N))
+	; assertz(nextflag(Fn/N))
 	).
 
 record(F,H) :-
@@ -281,7 +281,7 @@ cond_assert(F,H):-
 	\+ (fact(F,H1), entails(H1,H)),
 	getExistingConstraints(F,H0),
 	convhull(H0,H,H2),
-	assert(newfact(F,H2)),
+	assertz(newfact(F,H2)),
 	raise_flag(F).
 	%check_raise_flag(F,H0,H2).
 
@@ -290,7 +290,7 @@ narrow_cond_assert(F,H):-
 	getExistingNewConstraints(F,H0),
 	convhull(H0,H,H2),
 	retractall(newfact(F,_)),
-	assert(newfact(F,H2)).
+	assertz(newfact(F,H2)).
 	%check_raise_flag(F,H0,H2).
 
 getExistingConstraints(F,H0) :-
@@ -330,7 +330,7 @@ fact(X,Y) :-
 newoldfacts :-
 	retract(newfact(F,H)),
 	retractall(oldfact(F,_)),
-	assert(oldfact(F,H)),
+	assertz(oldfact(F,H)),
 	fail.
 newoldfacts.
 
@@ -365,7 +365,7 @@ widenlist([Wc|Ws]) :-
 	!,
 	ND is D-1,
 	retractall(widening_point(WcF/WcN,P,D)),
-	assert(widening_point(WcF/WcN,P,ND)),
+	assertz(widening_point(WcF/WcN,P,ND)),
 	widenlist(Ws).
 widenlist([Wc|Ws]) :-
 	functor(Wc,WcF,WcN),
@@ -374,7 +374,7 @@ widenlist([Wc|Ws]) :-
 	retract(oldfact(Wc,OldH)),
 	verbose_write(['Widening at ',Wc]),
 	wutwiden(Wc,NewH,OldH,H2),
-	assert(oldfact(Wc,H2)),
+	assertz(oldfact(Wc,H2)),
 	widenlist(Ws).
 
 wutwiden(F,H0,H1,H2) :-
@@ -432,7 +432,7 @@ assertWutFacts(end_of_file,_) :-
 	!.
 assertWutFacts((H :- C), S) :-
 	numbervars((H :- C),0,_),
-	assert(invariant(H,C)),
+	assertz(invariant(H,C)),
 	read(S,C1),
 	assertWutFacts(C1,S).
 	
@@ -456,16 +456,16 @@ collect_wps :-
 	findall((Dgs,F,N),widening_point(F/N,Dgs,_Delays),Wps),
 	reverse(Wps,RWps),
 	verbose_write(['Ordered by degree ',RWps]),
-	assert(prio_widen(RWps)).
+	assertz(prio_widen(RWps)).
 	
 assertWP(widening_point(X,Y)) :-
 	!,
 	delays(D),
-	assert(widening_point(X,Y,D)).
+	assertz(widening_point(X,Y,D)).
 assertWP(widening_point(X)) :-
 	!,
 	delays(D),
-	assert(widening_point(X,0,D)).
+	assertz(widening_point(X,0,D)).
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Predicate dependency graph
@@ -493,33 +493,33 @@ dependency_graph(Es,Vs) :-
 
 set_options(Options,File,FactFile) :-
 	member(programO(File),Options),
-	( member(verbose,Options) -> assert(flag(verbose))
+	( member(verbose,Options) -> assertz(flag(verbose))
 	; retractall(flag(verbose))
 	),
-	( member(singlepoint,Options) -> assert(widenAt(singlepoint))
-	; assert(widenAt(allpoints))
+	( member(singlepoint,Options) -> assertz(widenAt(singlepoint))
+	; assertz(widenAt(allpoints))
 	),
 	( member(widenO(WOutput),Options) -> true
 	; WOutput='widencns'
 	),
-	( member(widenF(WFunc),Options) -> assert(widenf(WFunc))
-	; assert(widenf(h79))
+	( member(widenF(WFunc),Options) -> assertz(widenf(WFunc))
+	; assertz(widenf(h79))
 	),
-	( member(detectwps(M),Options) -> assert(detectwps(M))
-	; assert(detectwps(feedback))
+	( member(detectwps(M),Options) -> assertz(detectwps(M))
+	; assertz(detectwps(feedback))
 	),
-	( member(thresholdFile(TFile),Options) -> assert(threshold(TFile))
-	; assert(threshold('$NOTHRESHOLD'))
+	( member(thresholdFile(TFile),Options) -> assertz(threshold(TFile))
+	; assertz(threshold('$NOTHRESHOLD'))
 	),
 	( member(withwut,Options) ->
-	  assert(widenf(withwut)),
+	  assertz(widenf(withwut)),
 	  readWutfacts,
 	  ( flag(verbose) ->
 	      write('Widening points: '),nl,
 	      showallwideningpoints
 	  ; true
 	  )
-	; assert(widenf(nowut))
+	; assertz(widenf(nowut))
 	),
 	( member(widenP(WPoints),Options) -> true
 	; WPoints='widenpoints'
@@ -536,23 +536,23 @@ set_options(Options,File,FactFile) :-
 	( member(delaywiden(DWit),Options) -> atom_number(DWit,DWitN)
 	; DWitN is 0
 	),
-	( member(counterExample(CexFile),Options) -> assert(cEx(CexFile))
-	; assert(cEx('$NOCEX'))
+	( member(counterExample(CexFile),Options) -> assertz(cEx(CexFile))
+	; assertz(cEx('$NOCEX'))
 	),
-	assert(delays(DWitN)),
-	assert(narrowiterations(NitN)),
+	assertz(delays(DWitN)),
+	assertz(narrowiterations(NitN)),
 	detectwps(WPSMethod),
 	( member(nowpscalc,Options) -> true
 	; wto_file(File,WPSMethod,WPoints)
 	),
 	load_widenpoints(WPoints),
-	assert(outputfile(WOutput)).
+	assertz(outputfile(WOutput)).
 	
 %%%% clean workspace
 
 initialise :-
-	assert(operatorcount(0)),
-	assert(flag(first)).
+	assertz(operatorcount(0)),
+	assertz(flag(first)).
 
 cleanWorkspace :-
 	retractall(flag(_)),
@@ -624,17 +624,17 @@ fact3(F,H,_) :-
 	oldfact(F,H).
 
 buildversions2 :-
-	assert(versionCount(0)),
+	assertz(versionCount(0)),
 	fact3(F,H,_),
 	retract(versionCount(N1)),
 	N is N1+1,
-	assert(versionCount(N)),
-	assert(version(F,H,N)),
+	assertz(versionCount(N)),
+	assertz(version(F,H,N)),
 	fail.
 buildversions2.
 
 versioniterate :-
-	assert(clauseCount(0)),
+	assertz(clauseCount(0)),
 	versionoperator,
 	fail.
 versioniterate.
@@ -643,7 +643,7 @@ versionoperator :-
 	my_clause(Head,B),
 	retract(clauseCount(K)),
 	K1 is K+1,
-	assert(clauseCount(K1)),
+	assertz(clauseCount(K1)),
 	versionprove(B,Cs,Ds,Vs),
 	Head =.. [_|Xs],
 	linearize(Cs,CsLin),
@@ -757,12 +757,12 @@ assertTransition(Hv,Vs,K1) :-
 	canonical(L1),
 	Head =.. [R,L1],
 	unaryBody(BSs,Xs,Body),
-	assert(versiontransition(Head,Body)),
+	assertz(versiontransition(Head,Body)),
 	makeHpath(Body,Head,HPath),
 	makeBpath(Body,_BPath),
 	makeAtomicPropositionFact(Body,Head,Prop),
-	assert(pathtransition(HPath)),
-	assert(atomicproposition(Prop)).
+	assertz(pathtransition(HPath)),
+	assertz(atomicproposition(Prop)).
 
 findCounterexampleTrace(S) :-
 	version(false,_,Y),

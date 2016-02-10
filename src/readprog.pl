@@ -405,36 +405,36 @@ writeClausespic([],_).
 writeClausespic([predicates(_)|Cls],S) :-
 	writeClausespic(Cls,S).
 writeClausespic([clause((A :- _B),_Ws)|BCls],Stream) :-
-%drop 'is_query'
+	%drop 'is_query'
         A =.. [F|_],
         name(F, [105,115,95,113,117,101,114,121]),
-!,
+	!,
 	writeClausespic(BCls,Stream).
 writeClausespic([clause((A :- _B),_Ws)|BCls],Stream) :-
-%drop '\\==_query'
+	%drop '\\==_query'
         A =.. [F|_],
         name(F, [92,61,61,95,113,117,101,114,121]),
-!,
+	!,
 	writeClausespic(BCls,Stream).
 writeClausespic([clause((A :- _B),_Ws)|BCls],Stream) :-
-%drop '=<_query'
+	%drop '=<_query'
         A =.. [F|_],
         name(F, [61,60,95,113,117,101,114,121]),
-!,
+	!,
 	writeClausespic(BCls,Stream).
 writeClausespic([clause((A :- _B),_Ws)|BCls],Stream) :-
-%drop '>=_query'
+	%drop '>=_query'
         A =.. [F|_],
         name(F, [62,61,95,113,117,101,114,121]),
-!,
+	!,
 	writeClausespic(BCls,Stream).
 
 writeClausespic([clause((A :- B),_Ws)|BCls],Stream) :-
-%Only select '_query'
+	%Only select '_query'
         A =.. [F|_],
         name(F,Fna),
         append(_,[95,113,117,101,114,121],Fna),
-!,
+	!,
 	%applyVarNames(Ws),
 	writeq(Stream,A),
 	write(Stream,' :-'),

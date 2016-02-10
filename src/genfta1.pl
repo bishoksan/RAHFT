@@ -58,8 +58,8 @@ makeFTA :-
 	getPreds(Bs,Qs,_),
 	LHS =.. [Id|Qs],
 	%AnyLHS =.. [Id|Any],
-	assert(transition(LHS,P)),
-	%assert(transition(AnyLHS,any)),
+	assertz(transition(LHS,P)),
+	%assertz(transition(AnyLHS,any)),
 	fail.
 makeFTA.
 

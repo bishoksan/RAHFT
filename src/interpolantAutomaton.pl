@@ -179,7 +179,7 @@ writeInterpolants(S, tree(B,_,I,SubTrees,_, _, NId)):-
     write(S,'-'),
     write(S, NId),
     write(S, '.'),
-    %assert(interpolant((B:-I))),
+    %assertz(interpolant((B:-I))),
     nl(S),
     writeInterpolantTrees(S, SubTrees).
 	
@@ -243,7 +243,7 @@ readInterpolants:-
 
 storeInterpolants(_, end_of_file):-!.
 storeInterpolants(S, I):-
-    assert(interpolant(I)),
+    assertz(interpolant(I)),
     read(S, I1),
     storeInterpolants(S, I1).
 
@@ -405,7 +405,7 @@ assertFTATransition(Left, Right):-
     (ftaTransition((Left :- Right)) ->
         true
     ;
-        assert(ftaTransition((Left :- Right)))
+        assertz(ftaTransition((Left :- Right)))
     ).
 
 

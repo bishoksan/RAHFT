@@ -69,7 +69,7 @@ operator:-
 	satisfiable(Cs4,H),
 	getConstraint(H,Cs5),
 	append(Cs5,Bs,B1),
-	assert(pe_clause(Head,B1)),
+	assertz(pe_clause(Head,B1)),
 	fail.
 operator.
 
@@ -119,7 +119,7 @@ record(Head,H):-
 	
 cond_assert(Head,H):-
 	\+ alreadyAsserted(Head,H),
-	assert(fact(Head,H)).
+	assertz(fact(Head,H)).
 		
 alreadyAsserted(Head,H) :-
 	fact(Head,H1), 
@@ -146,7 +146,7 @@ readPropFacts(S,(H:-C)) :-
 	varset(H,Xs),
 	dummyCList(Xs,DCL),
 	append(C,DCL,CsL),
-	assert(prop(H,CsL)),
+	assertz(prop(H,CsL)),
 	read(S,C1),
 	readPropFacts(S,C1).
 

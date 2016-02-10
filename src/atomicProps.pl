@@ -63,7 +63,7 @@ add_false_clauses.
 	
 assert_false_clauses([],_).
 assert_false_clauses([B|Bs],Cs) :-
-	assert(my_clause(B,Cs,x)),
+	assertz(my_clause(B,Cs,x)),
 	assert_false_clauses(Bs,Cs).
 	
 negAtoms([X=<Y|Cs],[X>Y|Ns]) :-
@@ -85,7 +85,7 @@ assert_false_neg_clauses([B|Bs],Cs) :-
 	
 assert_each_atom_clause([],_).
 assert_each_atom_clause([C|Cs],B) :-
-	assert(my_clause(B,[C],x)),
+	assertz(my_clause(B,[C],x)),
 	assert_each_atom_clause(Cs,B).
 	
 operator:-
@@ -116,7 +116,7 @@ record(Head,H):-
 
 cond_assert(Head,H):-
 	\+ alreadyAsserted(Head,H),
-	assert(fact(Head,H)).
+	assertz(fact(Head,H)).
 
 alreadyAsserted(Head,H) :-
 	fact(Head,H1), 

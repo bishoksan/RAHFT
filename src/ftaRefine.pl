@@ -43,8 +43,8 @@ setOptions(Options,File,FTA,OutS) :-
 			write(user_output,'No FTA file given.'),
 			nl(user_output), 
 			fail),
-	(member(splitFile(Split),Options), assert(split(Split)); 
-			assert(split('$NOSPLIT'))),
+	(member(splitFile(Split),Options), assertz(split(Split)); 
+			assertz(split('$NOSPLIT'))),
 	(member(outputFile(OutFile),Options), open(OutFile,write,OutS); 
 			OutS=user_output).
 			
@@ -55,7 +55,7 @@ cleanup :-
 	retractall(nameCounter(_)),
 	retractall(statePred(_,_,_)),
 	retractall(split(_)),
-	assert(nameCounter(0)).
+	assertz(nameCounter(0)).
 
 makeClauses([transition(Left,Right,C)|Trs]) :-
 	my_clause(H,B,C),
@@ -63,7 +63,7 @@ makeClauses([transition(Left,Right,C)|Trs]) :-
 	renameHead(H,Right,H1),
 	renameBody(Bs,Left,Bs1),
 	append(Cs,Bs1,Bs2),
-	assert(new_clause(H1,Bs2)),
+	assertz(new_clause(H1,Bs2)),
 	makeClauses(Trs).
 makeClauses([]).
 
@@ -173,7 +173,7 @@ epsilonClauses([Q|Qs],N,P) :-
 	functor(Head,P,N),
 	Head =.. [P|Xs],
 	Body =.. [Q1|Xs],
-	assert(new_clause(Head,[Body])),
+	assertz(new_clause(Head,[Body])),
 	epsilonClauses(Qs,N,P).
 
 renameHead(H,state(Right,P/N),H1) :-
@@ -187,11 +187,11 @@ getStateName(Right,N,_,Q) :-
 getStateName([Q],N,_,Q) :-
 	atom(Q),
 	!,
-	assert(statePred([Q],N,Q)).
+	assertz(statePred([Q],N,Q)).
 getStateName(Qs,N,P,PK) :-
 	getCounter(K),
 	newPredName(P,K,PK),
-	assert(statePred(Qs,N,PK)).
+	assertz(statePred(Qs,N,PK)).
 	
 renameBody([],[],[]).
 renameBody([B|Bs],[state([A|As],P/N)|Args],[B1|Bs1]) :-
@@ -237,7 +237,7 @@ readTransitions((L -> R), S,[transition(Ys,state(R,P/N),C)|Trs]) :-
 	addBodyArities(Bs,Xs,Ys),
 	(member(errortrace,R) -> 
 		true; 
-		assert(transition(Ys,state(R,P/N),C))),
+		assertz(transition(Ys,state(R,P/N),C))),
 	read(S,T),
 	readTransitions(T,S,Trs).
 
@@ -255,7 +255,7 @@ newPredName(P,K,PK) :-
 getCounter(K) :-
 	retract(nameCounter(K)),
 	K1 is K+1,
-	assert(nameCounter(K1)).
+	assertz(nameCounter(K1)).
 	
 writeClauses(S) :-
 	new_clause(A,Body),

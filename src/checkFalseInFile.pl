@@ -41,14 +41,14 @@ remember_clause((A :- B),K) :-
 	Es1=BCs0,
 	BCs1=BL0,
 	makeClauseId(K,CK),
-	assert(my_clause(Anodupl,ACs0,CK)).
+	assertz(my_clause(Anodupl,ACs0,CK)).
 
 remember_clause(A,K) :-
 	atomconstraints(A, ACs0, ACs1, Ant),
 	writeAtomEq(Ant,Anodupl,Es0,[]),
 	ACs1=Es0,
 	makeClauseId(K,CK),
-	assert(my_clause(Anodupl,ACs0,CK)),
+	assertz(my_clause(Anodupl,ACs0,CK)),
 	!.
 %Drop all non-execute/specialize clauses
 remember_clause(_,_).

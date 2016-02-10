@@ -78,7 +78,7 @@ record(Head,H,C):-
 	cond_assert(Head,H,C).
 	
 cond_assert(Head,H,C):-
-	assert(factc(Head,H,C)).
+	assertz(factc(Head,H,C)).
 		
 alreadyAsserted(Head,H) :-
 	factc(Head,H1,_), 

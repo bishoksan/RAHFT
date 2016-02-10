@@ -26,11 +26,11 @@ remember_clause((A :- B),K) :-
 	!,
 	tuple2list(B,BL),
 	makeClauseId(K,CK),
-	assert(my_clause(A,BL,CK)).
+	assertz(my_clause(A,BL,CK)).
 
 remember_clause(A,K) :-
 	makeClauseId(K,CK),
-	assert(my_clause(A,[],CK)),
+	assertz(my_clause(A,[],CK)),
 	!.
 %Drop all non-execute/specialize clauses
 remember_clause((:- _),_).

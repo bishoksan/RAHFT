@@ -30,7 +30,7 @@ setOptions(ArgV,OutS) :-
 			OutS=user_output),
 	(member(propFile(PFile),Options), readPropFile(PFile); 
 			true),
-	(member(atomicprops,Options), assert(atomicprops); 
+	(member(atomicprops,Options), assertz(atomicprops); 
 			true).
 
 cleanup :-
@@ -46,7 +46,7 @@ readPropFile(PFile) :-
 readPropFacts(_,end_of_file) :-
 	!.
 readPropFacts(S,(H:-C)) :-
-	assert(prop(H,C)),
+	assertz(prop(H,C)),
 	read(S,C1),
 	readPropFacts(S,C1).
 
