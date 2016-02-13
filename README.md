@@ -17,28 +17,36 @@ manipulating finite tree automata.
    [Parma Polyhedra Library](http://bugseng.com/products/ppl/) support
    (installed with `./ciao-boot.sh local-install
    --contrib:with_ppl=yes --contrib:auto_install_ppl=yes`)
-2. Ciao bindings for [Yices SMT solver](http://yices.csl.sri.com/) (`ciao get github.com/jfmc/ciao_yices`)
+2. Ciao bindings for [Yices SMT solver](http://yices.csl.sri.com/)
+   (`ciao get github.com/jfmc/ciao_yices`)
 
 ## Build and installation
 
 You can automatically fetch, build, and install RAHFT using:
 
-    ciao get github.com/bishoksan/RAHFT
+```sh
+ciao get github.com/bishoksan/RAHFT
+```
 
-Binaries will be placed in the `build/bin` directory relative to the
-Ciao workspace directory specified by the `CIAOPATH` environment
-variable (hidden `~/.ciao` if undefined).
+This command stores the source and generates the binaries in the Ciao
+_workspace directory_. This directory is given by the value of the
+`CIAOPATH` environment variable (or `~/.ciao` if unspecified).
 
-For developing RAHFT it is recommended to define `CIAOPATH` (E.g.,
+Binaries are placed in the `$CIAOPATH/build/bin` directory (or
+`~/.ciao/build/bin`). To call `rahft` without specifying its full path
+it is recommended to include this directory in your `PATH`:
+
+```sh
+export PATH=$CIAOPATH/build/bin:$PATH
+# or export PATH=~/.ciao/build/bin:$PATH
+```
+
+**For developing** RAHFT it is recommended to define `CIAOPATH` (E.g.,
 `~/ciao`) and clone this repository in your workspace.
 
-To call the `rahft` command without specifying its full path it is
-recommended to include in your `PATH` (replace `CIAOPATH` with
-`~/.ciao` if undefined):
+## Usage
 
-    export PATH=$CIAOPATH/build/bin:$PATH
-
-## Input and output
+**Usage**: `rahft` \<*input file containing a set of Horn clauses*\>
 
 **Input**: a set of Horn clauses together with integrity constraints. They
 are written using Prolog notation:
@@ -49,7 +57,17 @@ and an integrity constriant is written as `false :- C, b1(X1),...,bn(Xn).`
 
 **Output**: safe or unsafe.
 
-**How to run**: `rahft` \<*input file containing a set of Horn clauses*\>
+## Generate a standalone binary distribution
+
+```sh
+mkdir dist; cd dist
+ciaoc_sdyn ../src/rahft
+cp ../src/determinise.jar
+```
+
+This creates a platform specific binary `rahft` at `dist/`
+directory, together with the collection of shared libraries for the
+dependencies.
 
 ## References
 
