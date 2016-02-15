@@ -5,7 +5,7 @@
 % Output: safe if the program is solved else unknown if it is not solved
 
 :- use_module(library(format), [format/2, format/3]).
-:- use_module(library(system_extra), [mkpath/1]).
+:- use_module(library(system_extra), [mkpath/1,mktempdir_in_tmp/2, rmtempdir/1]).
 :- use_module(library(system)). % mktemp_in_tmp is available here
 :- use_module(library(pathnames), [path_basename/2, path_concat/3, path_split/3]).
 :- use_module(library(terms), [atom_concat/2]).
@@ -79,7 +79,7 @@ determinise_jar(Jar) :-
 % Refinement
 % ---------------------------------------------------------------------------
 
-refineHorn(F_SP, F_FTA, F_DFTA, F_SP, F_SPLIT, F_TRACETERM, F_REFINE, WithInterpolant):-
+refineHorn(F_SP, F_FTA, F_DFTA,  F_SPLIT, F_TRACETERM, F_REFINE, WithInterpolant):-
         format( "Generate FTA from program and error trace~n", []),
         genfta:main(['-prg', F_SP, '-trace', F_TRACETERM, '-o', F_FTA]),
         ( WithInterpolant=int ->
@@ -130,31 +130,58 @@ main([Prog]) :- !,
 	applyRAHFT(Prog, '$NOINTERPOLANTAUT').
 main([Prog,'-int']) :- !,
 	applyRAHFT(Prog, 'int').
+main([Prog,'-itr', N]) :- !,
+    
+	applyRAHFT_Bounded(Prog, '$NOINTERPOLANTAUT', N).
 main([Prog,'-sp', OFile]) :- !,
     hornSpecialise(Prog, OFile).
 main(_) :- !,
 	displayHelpMenu.
 
+
+applyRAHFT_Bounded(Prog, WithInterpolant, N):-
+
+
+
 applyRAHFT(Prog1, WithInterpolant) :-
 	logfile(LogFile),
 	open(LogFile, append, LogS),
 	%creating temporary directory for intermediate files
-	%mktemp_in_tmp('linearsolveHorn', ResultDir),
-	atom_concat(Prog1, '_output', ResultDir),
-	mkpath(ResultDir),
+	mktempdir_in_tmp('rahft-XXXXXXXX', ResultDir),
 	format( "temp dir ~w~n", [ResultDir]),
 	K = 0,
-	statistics(runtime,[START|_]),
-	loop(LogS, ResultDir, Prog1, K, Result, K1, WithInterpolant),
+    path_basename(Prog1, F),
+    createTmpFilePP(ResultDir, F, F_QA, QA_CPA,F_SP,F_WidenPoints, F_TRACETERM, F_THRESHOLD),
+    createTmpFileRef(ResultDir, F, F_FTA, F_DFTA, F_SPLIT, F_REFINE),
+
+    statistics(runtime,[START|_]),
+    abstract_refine(LogS,  Prog1, K, Result, K1, WithInterpolant,  F_QA, QA_CPA,F_SP,F_WidenPoints, F_TRACETERM, F_THRESHOLD, F_FTA, F_DFTA, F_SPLIT, F_REFINE),
+	%loop(LogS, ResultDir, Prog1, K, Result, K1, WithInterpolant),
 	statistics(runtime,[END|_]),
 	DIFF is END - START,
 	path_basename(Prog1, F),
 	printRahftOutput(LogS,F, Result, K1, DIFF),
-	%format(LogS, "#####################################################################~n", []),
 	%remove the directory of intermediate files
 	remove_resultdir(ResultDir),
 	close(LogS).
 
+abstract_refine(LogS,  Prog1, K, Result, K1, WithInterpolant,  F_QA, QA_CPA, F_SP,F_WidenPoints, F_TRACETERM, F_THRESHOLD, F_FTA, F_DFTA, F_SPLIT, F_REFINE) :-
+	verifyCPA(Prog1, F_QA, QA_CPA, F_SP, F_WidenPoints, F_TRACETERM, F_THRESHOLD, Ret1),
+	( Ret1 = safe ->
+	    Result = Ret1,
+	    K2 = K,
+	    format("the  program is safe~n", [])
+	; Ret1 = unsafe ->
+	    Result= Ret1,
+	    K2 = K,
+	    format("the  program is unsafe~n", [])
+	; % refinement with FTA
+	  refineHorn(F_SP, F_FTA, F_DFTA,  F_SPLIT, F_TRACETERM, F_REFINE, WithInterpolant),
+	  K1 is K + 1,
+	  abstract_refine(LogS,  F_REFINE, K1, Result, K2, WithInterpolant, F_QA, QA_CPA,F_SP,F_WidenPoints, F_TRACETERM, F_THRESHOLD, F_FTA, F_DFTA, F_SPLIT, F_REFINE)
+	).
+
+/*
 loop(LogS, ResultDir, Prog1,  K, Result, K2, WithInterpolant) :-
 	path_basename(Prog1, F),
 	createTmpFilePP(ResultDir, F, F_QA, QA_CPA,F_SP,F_WidenPoints, F_TRACETERM, F_THRESHOLD),
@@ -173,6 +200,7 @@ loop(LogS, ResultDir, Prog1,  K, Result, K2, WithInterpolant) :-
 	  K1 is K + 1,
 	  loop(LogS, ResultDir, F_REFINE, K1, Result, K2, WithInterpolant)
 	).
+*/
 
 hornSpecialise(Prog, OutputFile):-
     atom_concat(Prog, '_output', ResultDir),
@@ -185,7 +213,7 @@ hornSpecialise(Prog, OutputFile):-
 	statistics(runtime,[END|_]),
 	DIFF is END - START,
 	path_basename(Prog, F),
-	format( "Total time: ~w ~n", [DIFF]),
+	format( "Total time: ~w ms. ~n", [DIFF]),
 	%remove the directory of intermediate files
 	remove_resultdir(ResultDir).
 
