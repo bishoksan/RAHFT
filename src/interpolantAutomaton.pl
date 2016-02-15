@@ -34,6 +34,7 @@
 :- use_module(interpolant).
 :- use_module(linearize).
 :- use_module(ppl_ops).
+:- include(common).
 :- use_module(setops).
 :- use_module(input_ppl_clausenum).
 :- use_module(canonical).
@@ -471,22 +472,6 @@ cleanup:-
     retractall(my_clause(_,_,_)),
     retractall(ftaTransition(_)).
 
-list2Disj([A], (A1)):-
-    !,
-    list2Conj(A, A1).
-list2Disj([A|R], ((A1);R1)):-
-    !,
-    list2Conj(A, A1),
-    interpolantAutomaton:list2Disj(R, R1).
-list2Disj([], (1=1)).
-
-
-list2Conj([A], (A)):-
-    !.
-list2Conj([A|R], (A,R1)):-
-    !,
-    list2Conj(R, R1).
-list2Conj([], (1=1)). % meaning true
 
 getNegHeadFormula([HF], HF1):-
         HF1=[neg(HF)].
