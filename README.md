@@ -2,7 +2,8 @@
 
 (RAHFT) RAHFT is a tool based on abstraction refinement for verifying
 Constrained Horn clauses using abstract interpretation and finite tree
-automata.
+automata. The correctness of results are with respect to the `input Horn clauses` and over the theory
+of `linear real arithmetic`.
 
 ## Programming 
 
@@ -55,7 +56,7 @@ e.g. a clause is written as: `h(X):- C, b1(X1),...,bn(Xn).`
 
 and an integrity constriant is written as `false :- C, b1(X1),...,bn(Xn).`
 
-**Output**: safe or unsafe.
+**Output**: `safe` or `unsafe`.
 
 ## Generate a standalone binary distribution
 
