@@ -130,6 +130,8 @@ main([Prog]) :- !,
 	applyRAHFT(Prog, '$NOINTERPOLANTAUT').
 main([Prog,'-int']) :- !,
 	applyRAHFT(Prog, 'int').
+main([Prog,'-sp', OFile]) :- !,
+    hornSpecialise(Prog, OFile).
 main(_) :- !,
 	displayHelpMenu.
 
@@ -171,6 +173,21 @@ loop(LogS, ResultDir, Prog1,  K, Result, K2, WithInterpolant) :-
 	  K1 is K + 1,
 	  loop(LogS, ResultDir, F_REFINE, K1, Result, K2, WithInterpolant)
 	).
+
+hornSpecialise(Prog, OutputFile):-
+    atom_concat(Prog, '_output', ResultDir),
+	mkpath(ResultDir),
+	format( "temp dir ~w~n", [ResultDir]),
+    path_basename(Prog, F),
+	createTmpFilePP(ResultDir, F, F_QA, QA_CPA,_,F_WidenPoints, _, F_THRESHOLD),
+	statistics(runtime,[START|_]),
+	preProcessHorn(Prog, F_QA, QA_CPA, F_WidenPoints, F_THRESHOLD, OutputFile),
+	statistics(runtime,[END|_]),
+	DIFF is END - START,
+	path_basename(Prog, F),
+	format( "Total time: ~w ~n", [DIFF]),
+	%remove the directory of intermediate files
+	remove_resultdir(ResultDir).
 
 wideningPoints_file(ResultDir, F_WidenPoints) :-
 	path_concat(ResultDir, 'widenpoints', F_WidenPoints).
