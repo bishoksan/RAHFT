@@ -57,6 +57,7 @@ e.g. a clause is written as: `h(X):- C, b1(X1),...,bn(Xn).`
 and an integrity constriant is written as `false :- C, b1(X1),...,bn(Xn).`
 
 **Output**: `safe` or `unsafe`.
+The results of the analysis will be appended to the `result.txt` file in the current directory and also shown in the console.
 
 ## Generate a standalone binary distribution
 
