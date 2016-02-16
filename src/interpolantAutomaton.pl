@@ -39,7 +39,6 @@
 :- use_module(input_ppl_clausenum).
 :- use_module(canonical).
 :- use_module(yices2_sat).
-%:- use_module(ciao_yices_2).
 
 :- use_module(library(terms_vars)).
 :- use_module(library(ppl)).
