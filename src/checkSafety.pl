@@ -1,5 +1,8 @@
 :- module(checkSafety, [checkSafety/2], []).
 
+:- use_module(library(write)).
+:- use_module(library(read)).
+
 safe(PFile) :-
 	open(PFile,read,S),
 	read(S,C),
@@ -30,7 +33,7 @@ main([F]) :-
 checkSafety(F, Result) :-
 	S = user_output,
 	write(S,F), 
-	( safe(F, K) ->
+	( safe(F) ->
 	    write(S,': PROGRAM IS SAFE'),nl(S), Result = safe
 	;
 	    write(S,': PROGRAM MIGHT NOT BE SAFE'),nl(S), Result = otherwise % unsafe or unknown

@@ -34,7 +34,6 @@
 :- use_module(interpolant).
 :- use_module(linearize).
 :- use_module(ppl_ops).
-:- include(common).
 :- use_module(setops).
 :- use_module(input_ppl_clausenum).
 :- use_module(canonical).
