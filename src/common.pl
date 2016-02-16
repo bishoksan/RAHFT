@@ -18,14 +18,14 @@ list2Conj([A|R], (A,R1)):-
     list2Conj(R, R1).
 list2Conj([], (1=1)). % meaning true
 
-list2Disj([A], (A1)):-
+listofList2Disj([A], (A1)):-
     !,
     list2Conj(A, A1).
-list2Disj([A|R], ((A1);R1)):-
+listofList2Disj([A|R], ((A1);R1)):-
     !,
     list2Conj(A, A1),
-    list2Disj(R, R1).
-list2Disj([], (1=0)).
+    listofList2Disj(R, R1).
+listofList2Disj([[]], (1=0)).
 
 convert2num(A,A) :-
 	number(A),

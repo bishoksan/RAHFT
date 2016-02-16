@@ -225,13 +225,13 @@ collectBodyInterpolants([B|Bs], Interpolants, [IId|RIds]):-
 collectDisjInterpolants([B], [BDInterpolants]):-
     !,
     findall(I, interpolant((B:-I)), BInterpolants), %BInterpolants is a list of a list
-    interpolantAutomaton:list2Disj(BInterpolants, BDInterpolants).
+    listofList2Disj(BInterpolants, BDInterpolants).
 collectDisjInterpolants([B|Bs], [BDInterpolants|BsDInterpolants]):-
     !,
     findall(I, interpolant((B:-I)), BInterpolants), %BInterpolants is a list of a list
-    interpolantAutomaton:list2Disj(BInterpolants, BDInterpolants),
+    listofList2Disj(BInterpolants, BDInterpolants),
     collectDisjInterpolants(Bs, BsInterpolants),
-    interpolantAutomaton:list2Disj(BsInterpolants, BsDInterpolants).
+    listofList2Disj(BsInterpolants, BsDInterpolants).
 collectDisjInterpolants([], []).
 
 readInterpolants:-
