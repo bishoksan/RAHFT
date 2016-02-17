@@ -25,7 +25,7 @@ listofList2Disj([A|R], ((A1);R1)):-
     !,
     list2Conj(A, A1),
     listofList2Disj(R, R1).
-listofList2Disj([[]], (1=0)).
+listofList2Disj([], (1=0)).
 
 convert2num(A,A) :-
 	number(A),
