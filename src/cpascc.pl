@@ -212,10 +212,6 @@ operator(Head,B):-
 	project(H1,Zs,Hp),
 	record(Head,Hp).
 
-% adding constraints for missing dimensions
-dummyCList([],[]).
-dummyCList([C|Cs],[C-C=0|Cs1]) :-
-	dummyCList(Cs,Cs1).
 
 changed(Bs) :- 
 	member(B,Bs),

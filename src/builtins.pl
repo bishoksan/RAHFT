@@ -17,6 +17,10 @@ is_module_expanded(Goal,PGoal,Module):-
 builtin(G) :-
 	functor(G,F,N),
 	builtin_export(_,F,N,_).
+
+builtin(read(_)).
+builtin(write(_)).
+builtin(nl).
 	
 builtin_export(arithmetic,is,2,0) .
 builtin_export(arithmetic,<,2,0) .

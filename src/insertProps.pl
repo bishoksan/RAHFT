@@ -109,10 +109,7 @@ solve(Xs,Cs,Hp) :-
 	satisfiable(CsL,H1),
 	setdiff(Ys,Xs,Zs),
 	project(H1,Zs,Hp).
-	
-dummyCList([],[]).
-dummyCList([C|Cs],[C=C|Cs1]) :-
-	   dummyCList(Cs,Cs1).
+
 	   
 record(Head,H):-
 	cond_assert(Head,H).
@@ -126,13 +123,6 @@ alreadyAsserted(Head,H) :-
 	entails(H,H1),
 	entails(H1,H).
 	
-separate_constraints([],[],[]).
-separate_constraints([B|Bs],[C|Cs],Ds) :-
-	constraint(B,C),
-	!,
-	separate_constraints(Bs,Cs,Ds).
-separate_constraints([B|Bs],Cs,[B|Ds]) :-
-	separate_constraints(Bs,Cs,Ds).
 
 readPropFile(PFile) :-
 	open(PFile,read,S),

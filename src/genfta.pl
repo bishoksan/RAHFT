@@ -87,13 +87,6 @@ showFTA(S) :-
 	fail.
 showFTA(_).
 	
-separate_constraints([],[],[]).
-separate_constraints([B|Bs],[C|Cs],Ds) :-
-	constraint(B,C),
-	!,
-	separate_constraints(Bs,Cs,Ds).
-separate_constraints([B|Bs],Cs,[B|Ds]) :-
-	separate_constraints(Bs,Cs,Ds).
 
 predArity(P,N,PN) :-
 	name(P,X),

@@ -368,13 +368,6 @@ interpolantTree(A,Trace,ITree, K) :-
     %update interpolant for the false node
     updateInterpolantForFalseNode(ITree1, ITree).
 
-separate_constraints([],[],[]).
-separate_constraints([B|Bs],[C|Cs],Ds) :-
-	constraint(B,C),
-	!,
-	separate_constraints(Bs,Cs,Ds).
-separate_constraints([B|Bs],Cs,[B|Ds]) :-
-	separate_constraints(Bs,Cs,Ds).
 
 printFTA(Trace, S):-
     %check if interpolant FTA is not empty
@@ -461,9 +454,6 @@ writeFTA([T|Ts],S) :-
 	nl(S),
 	writeFTA(Ts,S).
 
-dummyCList([],[]).
-dummyCList([C|Cs],[C=C|Cs1]) :-
-    dummyCList(Cs,Cs1).
 
 cleanup:-
     retractall(interpolant(_)),

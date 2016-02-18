@@ -2,6 +2,8 @@
 	start_ppl/0,
 	end_ppl/0,
 	getConstraint/2,
+    addConstraints/2,
+    addConstraint/2,
 	makePolyhedron/2,
 	copyPolyhedron/2,
 	satisfiable/2,
@@ -19,8 +21,10 @@
 	mapCoords/2,
 	rankingFunction_PR/2,
 	rankingFunction_MS/2,
+    allRankingFunctions_PR/2,
 	polyhedronDimension/2,
 	maximizeExpr/4,
+    minimizeExpr/4,
 	dropNonIntegerPoint/1
 ], []).
 
@@ -30,6 +34,12 @@
 
 getConstraint(H,Cs0) :-
 	ppl_Polyhedron_get_minimized_constraints(H,Cs0).
+
+addConstraints(H,C):-
+    ppl_Polyhedron_add_constraints(H,C).
+
+addConstraint(H,C):-
+    ppl_Polyhedron_add_constraint(H,C).
 	
 makePolyhedron(Cs,H1)  :-
 	ppl_new_NNC_Polyhedron_from_constraints(Cs,H1).
@@ -94,12 +104,17 @@ rankingFunction_PR(H,F) :-
 rankingFunction_MS(H,F) :-
 	ppl_one_affine_ranking_function_MS_NNC_Polyhedron(H,F).
 
+allRankingFunctions_PR(H,F) :-
+	ppl_all_affine_ranking_functions_PR_NNC_Polyhedron(H,F).
 	
 polyhedronDimension(H,K) :-
 	ppl_Polyhedron_space_dimension(H,K).
 
 maximizeExpr(P, Expr, CoNum, CoDen):-
     ppl_Polyhedron_maximize(P, Expr, CoNum, CoDen, _).
+
+minimizeExpr(P, Expr, CoNum, CoDen):-
+    ppl_Polyhedron_minimize(P, Expr, CoNum, CoDen, _).
 
 dropNonIntegerPoint(H0):-
     ppl_Polyhedron_drop_some_non_integer_points(H0,polynomial).

@@ -7,6 +7,11 @@
 :- use_module(ppl_ops).
 :- use_module(input_ppl_clausenum).
 
+:- include(common).
+
+recognised_option(_,_,_). %just needed due to common.pl include
+
+
 main([F, TraceF,Result]) :-
 	unsafe(F,TraceF, Result).
 	
@@ -64,12 +69,5 @@ checkSat(Cs) :-
 nonSat(Cs) :-
 	numbervars(Cs,0,_),
 	\+ satisfiable(Cs,_).
-	
-separate_constraints([],[],[]).
-separate_constraints([B|Bs],[C|Cs],Ds) :-
-	constraint(B,C),
-	!,
-	separate_constraints(Bs,Cs,Ds).
-separate_constraints([B|Bs],Cs,[B|Ds]) :-
-	separate_constraints(Bs,Cs,Ds).
+
 	

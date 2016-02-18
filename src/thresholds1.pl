@@ -18,9 +18,12 @@
 
 :- dynamic(fact/2).
 :- dynamic(prop/2).
+:- dynamic(abstract/0).
+
 
 recognised_option('-prg',  programO(R),[R]).
 recognised_option('-o',    outputFile(R),[R]).
+recognised_option('-a',    abstract,[]).
 	
 main(ArgV) :-
 	cleanup,
@@ -33,7 +36,7 @@ main(ArgV) :-
 	atomicprops,
 	%facts2props,
 	%write('Writing out threshold facts'),
-	%nl,
+	nl,
 	showallprops(OutS),
 	nl(OutS),
 	close(OutS),
@@ -48,7 +51,7 @@ thresholds(N,Ps) :-
 	operator,
 	%showallfacts(user_output), nl(user_output),
 	clearprops,
-	%abstract(Ps),
+	(abstract -> abstract(Ps); true),
 	%write('Abstract facts'),nl,
 	%showallfacts(user_output), nl(user_output),
 	N1 is N-1,
@@ -61,11 +64,16 @@ setOptions(ArgV,File,OutS) :-
 	(member(programO(File),Options); 
 			write(user_output,'No input file given.'),nl(user_output)),
 	(member(outputFile(OutFile),Options), open(OutFile,write,OutS); 
-			OutS=user_output).
+			OutS=user_output),
+	(member(abstract,Options), assert(abstract); 
+			true).
+
+
 
 cleanup :-
 	retractall(fact(_,_)),
 	retractall(prop(_,_)),
+	retractall(abstract),
 	retractall(my_clause(_,_,_)).
 
 clearprops :-
@@ -85,7 +93,7 @@ preds([]).
 assert_top_values([]).
 assert_top_values([P/N|Ps]) :-
 	functor(A,P,N),
-	assertz(prop(A,[])),
+	assert(prop(A,[])),
 	assert_top_values(Ps).
 	
 atomicprops :-
@@ -113,7 +121,7 @@ facts2props :-
 	fact(A,H),
 	getConstraint(H,Cs),
 	melt(prop(A,Cs),Prop),
-	assertz(Prop),
+	assert(Prop),
 	fail.
 facts2props.
 	
@@ -132,7 +140,7 @@ checkAssert(P) :-
 	!.
 checkAssert(P) :-
 	melt(P, Prop),
-	assertz(Prop).
+	assert(Prop).
 	
 existingProp(prop(B,C)) :-
 	prop(B,C).
@@ -155,7 +163,7 @@ abstract([P/N|Ps]) :-
 	convexhull([H1|Hs],H2),
 	retractall(fact(A,_)),
 	numbervars(A,0,_),
-	assertz(fact(A,H2)),
+	assert(fact(A,H2)),
 	abstract(Ps).
 abstract([_|Ps]) :-
 	abstract(Ps).
@@ -181,16 +189,13 @@ solve(Bs,Xs,Cs,Hp) :-
 	setdiff(Ys,Xs,Zs),
 	project(H1,Zs,Hp).
 	
-dummyCList([],[]).
-dummyCList([C|Cs],[C=C|Cs1]) :-
-	   dummyCList(Cs,Cs1).
 	   
 record(Head,H):-
 	cond_assert(Head,H).
 	
 cond_assert(Head,H):-
 	\+ alreadyAsserted(Head,H),
-	assertz(fact(Head,H)).
+	assert(fact(Head,H)).
 		
 alreadyAsserted(Head,H) :-
 	fact(Head,H1), 
@@ -199,15 +204,6 @@ alreadyAsserted(Head,H) :-
 
 prove(Bs,Ds) :-
 	prove_any(Bs,Ds).
-	
-separate_constraints([],[],[]).
-separate_constraints([B|Bs],[C|Cs],Ds) :-
-	constraint(B,C),
-	!,
-	separate_constraints(Bs,Cs,Ds).
-separate_constraints([B|Bs],Cs,[B|Ds]) :-
-	separate_constraints(Bs,Cs,Ds).
-
 
 prove_any([],[]).
 prove_any([true],[]).

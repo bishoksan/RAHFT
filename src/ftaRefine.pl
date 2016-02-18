@@ -214,13 +214,6 @@ renameBody([B|Bs],[state(Qs,P/N)|Args],[B1|Bs1]) :-
 	B1=.. [Q|Xs],
 	renameBody(Bs,Args,Bs1).
 
-separate_constraints([],[],[]).
-separate_constraints([B|Bs],[C|Cs],Ds) :-
-	constraint(B,C),
-	!,
-	separate_constraints(Bs,Cs,Ds).
-separate_constraints([B|Bs],Cs,[B|Ds]) :-
-	separate_constraints(Bs,Cs,Ds).
 	
 load_fta(File,Trs) :-
 	open(File,read,S),

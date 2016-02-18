@@ -69,14 +69,6 @@ get_value_as_term(M, E, Term) :-
 	yices_parse_term(Y,T),
 	yices_get_value_as_term(M,T,Term).
 
-/*
-get_int32_value(M, E, IntValue) :-
-	expr2yices(E,Y),
-	!,
-	yices_parse_term(Y,T),
-	yices_get_int32_value(M,T,IntValue, Status),
-    Status >0.
-*/
 	
 expr2yices([X1,X2|Y],S) :-
 	expr2yices(X1,S1),

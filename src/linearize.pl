@@ -1,4 +1,11 @@
-:- module(linearize,[linearize/2, constraint/2, linear_constraint/1], []).
+:- module(linearize,[linearize/2,  linear_constraint/1], []).
+
+:- use_module(library(lists)).
+
+
+:- include(common).
+
+recognised_option(_,_,_). % this is needed due to common.pl include
 	
 %%%%%%%%%%%%
 %
@@ -180,16 +187,5 @@ linear_approx(X = \Y ,X=255-Y) :-
 linear_approx(X = \Y, X = 255 - Y) :-
 	const(Y), !.
 	
-constraint(X=Y, X=Y).
-constraint(X=:=Y, X=Y).
-constraint(X is Y, X = Y).
-constraint(X>Y, X>Y).
-constraint(X>=Y, X>=Y).
-constraint(X=<Y, X=<Y).
-constraint(X<Y, X<Y).
 
-constraint(_\==_,0=0).
-constraint(_=\=_,0=0).
-constraint(true,0=0).
-constraint(fail,1=0).
 
