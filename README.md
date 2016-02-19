@@ -7,8 +7,8 @@ of `linear real arithmetic`.
 
 ## Programming 
 
-RAHFT is written in Ciao prolog and is interfaced with Parma polyhedra
-libray and Yices SMT solver for handling constraints.  RAHFT uses
+RAHFT is written in Ciao and is interfaced with Parma polyhedra
+library and Yices SMT solver for handling constraints.  RAHFT uses
 several reusable components such as Convex polyhedra analyser,
 Query-answer tranformer etc. It also includes a Java library for
 manipulating finite tree automata.
