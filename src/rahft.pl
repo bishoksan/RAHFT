@@ -76,11 +76,20 @@ verifyCPA(Prog, QAFile, QACPA, F_CPA, OutputFile, F_WidenPoints, F_Traceterm, F_
 
 % ---------------------------------------------------------------------------
 
-% (assume that determinise.jar is in the same directory as the executable)
-determinise_jar(Jar) :-
-	current_executable(ExecPath),
-	path_split(ExecPath, ExecDir, _),
-	path_concat(ExecDir, 'determinise.jar', Jar).
+:- use_module(library(system), [file_exists/1]).
+:- use_module(library(bundle/paths_extra), [fsR/2]).
+
+% Find determinise.jar in the same directory as the executable
+% or in the sources.
+determinise_jar(Path) :-
+	( current_executable(ExecPath),
+	  path_split(ExecPath, Dir, _)
+	; fsR(bundle_src('RAHFT')/src, Dir)
+	),
+	path_concat(Dir, 'determinise.jar', Jar),
+	file_exists(Jar),
+	!,
+	Path = Jar.
 
 % ---------------------------------------------------------------------------
 % Refinement
