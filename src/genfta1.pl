@@ -2,16 +2,16 @@
 
 % Generate an FTA from a program, and an error trace.
 
-:- use_module(builtins).
-
 :- use_module(library(dynamic)).
 :- use_module(library(write)).
 :- use_module(library(read)).
 :- use_module(library(lists)).
-:- use_module(load_simple).
-:- use_module(linearize).
 
-:- include(common).
+:- use_module(chclibs(builtins)).
+:- use_module(chclibs(load_simple)).
+:- use_module(chclibs(linearize)).
+
+:- include(chclibs(common)).
 
 :- dynamic transition/2.
 

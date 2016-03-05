@@ -2,17 +2,18 @@
 
 :- use_module(library(write)).
 :- use_module(library(dynamic)).
-:- use_module(setops).
-:- use_module(canonical).
-:- use_module(linearize).
 :- use_module(library(terms_vars)).
 :- use_module(library(ppl)).
 :- use_module(library(lists)).
-:- use_module(timer_ciao).
-:- use_module(input_ppl_clausenum).
-:- use_module(ppl_ops).
 
-:- include(common).
+:- use_module(chclibs(setops)).
+:- use_module(chclibs(canonical)).
+:- use_module(chclibs(linearize)).
+:- use_module(chclibs(timer_ciao)).
+:- use_module(chclibs(input_ppl_clausenum)).
+:- use_module(chclibs(ppl_ops)).
+
+:- include(chclibs(common)).
 
 :- dynamic(fact/2).
 

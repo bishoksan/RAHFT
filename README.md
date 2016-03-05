@@ -20,6 +20,8 @@ manipulating finite tree automata.
    --contrib:with_ppl=yes --contrib:auto_install_ppl=yes`)
 2. Ciao bindings for [Yices SMT solver](http://yices.csl.sri.com/)
    (`ciao get github.com/jfmc/ciao_yices`)
+3. [CHCLibs](http://github.com/bishoksan/chclibs)
+   (`ciao get github.com/bishoksan/chclibs`)
 
 ## Build and installation
 

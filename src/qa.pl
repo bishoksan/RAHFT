@@ -12,13 +12,14 @@
 :- use_module(library(read)).
 :- use_module(library(write)).
 :- use_module(library(lists)).
-:- use_module(builtins).
-:- use_module(readprog).
-:- use_module(canonical).
-:- use_module(myterms).
-:- use_module(flatnames).
 
-:- include(common).
+:- use_module(chclibs(builtins)).
+:- use_module(chclibs(readprog)).
+:- use_module(chclibs(canonical)).
+:- use_module(chclibs(myterms)).
+:- use_module(chclibs(flatnames)).
+
+:- include(chclibs(common)).
 
 %% usage:  qa Infile -q "Query" [-o Outfile][-ans][-index][-builtin] 
 %% qa pumpStates1.pl -q "pumpSystem" -o qpumpStates.pl
