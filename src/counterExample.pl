@@ -3,11 +3,12 @@
 :- use_module(library(read)).
 :- use_module(library(write)).
 :- use_module(library(lists)).
-:- use_module(linearize).
-:- use_module(ppl_ops).
-:- use_module(input_ppl_clausenum).
 
-:- include(common).
+:- use_module(chclibs(linearize)).
+:- use_module(chclibs(ppl_ops)).
+:- use_module(chclibs(input_ppl_clausenum)).
+
+:- include(chclibs(common)).
 
 recognised_option(_,_,_). %just needed due to common.pl include
 

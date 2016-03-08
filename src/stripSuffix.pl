@@ -4,9 +4,10 @@
 :- use_module(library(write)).
 :- use_module(library(read)).
 :- use_module(library(lists)).
-:- use_module(timer_ciao).
 
-:- include(common).
+:- use_module(chclibs(timer_ciao)).
+
+:- include(chclibs(common)).
 
 :- dynamic(prop/2).
 :- dynamic(atomicprops/0).
