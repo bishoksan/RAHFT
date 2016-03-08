@@ -17,9 +17,9 @@
 :- use_module(chclibs(thresholds1), [main/1]).
 :- use_module(chclibs(load_simple)).
 :- use_module(chclibs(cpascc), [main/1]).
+:- use_module(chclibs(qa), [main/1]).
 
 :- use_module(counterExample, [main/1]).
-:- use_module(qa, [main/1]).
 :- use_module(insertProps, [main/1]).
 :- use_module(genfta, [main/1]).
 :- use_module(splitClauseIds, [main/1]).
