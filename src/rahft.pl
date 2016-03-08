@@ -1,3 +1,4 @@
+%check -model option, it is printing result of each iterations
 :- module(rahft, [main/1], []).
 
 % Solves a non-linear Horn clause using a linear solver.
