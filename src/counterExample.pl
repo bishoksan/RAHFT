@@ -7,11 +7,7 @@
 :- use_module(chclibs(linearize)).
 :- use_module(chclibs(ppl_ops)).
 :- use_module(chclibs(input_ppl_clausenum)).
-
-:- include(chclibs(common)).
-
-recognised_option(_,_,_). %just needed due to common.pl include
-
+:- use_module(chclibs(common)).
 
 main([F, TraceF,Result]) :-
 	unsafe(F,TraceF, Result).

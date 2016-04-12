@@ -13,12 +13,11 @@
 :- use_module(library(prolog_sys), [statistics/2]).
 :- use_module(library(lists)).
 
-:- include(chclibs(common)).
-
 :- use_module(chclibs(thresholds1), [main/1]).
 :- use_module(chclibs(load_simple)).
 :- use_module(chclibs(cpascc), [main/1]).
 :- use_module(chclibs(qa), [main/1]).
+:- use_module(chclibs(common)).
 
 :- use_module(counterExample, [main/1]).
 :- use_module(insertProps, [main/1]).

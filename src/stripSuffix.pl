@@ -6,9 +6,9 @@
 :- use_module(library(lists)).
 
 :- use_module(chclibs(timer_ciao)).
+:- use_module(chclibs(common)).
 
 :- include(chclibs(get_options)).
-:- include(chclibs(common)).
 
 :- dynamic(prop/2).
 :- dynamic(atomicprops/0).

@@ -8,9 +8,9 @@
 :- use_module(chclibs(builtins)).
 :- use_module(chclibs(load_simple)).
 :- use_module(chclibs(linearize)).
+:- use_module(chclibs(common)).
 
 :- include(chclibs(get_options)).
-:- include(chclibs(common)).
 
 :- dynamic transition/3.
 :- dynamic new_clause/2.

@@ -12,9 +12,9 @@
 :- use_module(chclibs(timer_ciao)).
 :- use_module(chclibs(input_ppl_clausenum)).
 :- use_module(chclibs(ppl_ops)).
+:- use_module(chclibs(common)).
 
 :- include(chclibs(get_options)).
-:- include(chclibs(common)).
 
 :- dynamic(fact/2).
 

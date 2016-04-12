@@ -38,6 +38,7 @@
 :- use_module(chclibs(input_ppl_clausenum)).
 :- use_module(chclibs(canonical)).
 :- use_module(chclibs(yices2_sat)).
+:- use_module(chclibs(common)).
 
 :- use_module(library(terms_vars)).
 :- use_module(library(ppl)).
@@ -45,7 +46,6 @@
 :- use_module(ciao_yices(ciao_yices_2)).
 
 :- include(chclibs(get_options)).
-:- include(chclibs(common)).
 
 recognised_option('-prg',  programO(R),[R]).
 recognised_option('-trace', traces(R),[R]).
