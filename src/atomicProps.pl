@@ -13,6 +13,7 @@
 :- use_module(chclibs(input_ppl_clausenum)).
 :- use_module(chclibs(ppl_ops)).
 
+:- include(chclibs(get_options)).
 :- include(chclibs(common)).
 
 :- dynamic(fact/2).
@@ -43,7 +44,7 @@ setOptions(ArgV,File,OutS) :-
 	( member(programO(File),Options)
 	; write(user_output,'No input file given.'),nl(user_output)
 	),
-	( member(outputFile(user_outout),Options) ->
+	( member(outputFile(user_output),Options) ->
 	    OutS=user_output
 	; member(outputFile(OutFile),Options), open(OutFile,write,OutS)
 	; OutS=user_output

@@ -11,6 +11,7 @@
 :- use_module(chclibs(load_simple)).
 :- use_module(chclibs(linearize)).
 
+:- include(chclibs(get_options)).
 :- include(chclibs(common)).
 
 :- dynamic transition/2.

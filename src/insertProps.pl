@@ -14,6 +14,7 @@
 :- use_module(chclibs(input_ppl_clausenum)).
 :- use_module(chclibs(ppl_ops)).
 
+:- include(chclibs(get_options)).
 :- include(chclibs(common)).
 
 :- dynamic(fact/2).

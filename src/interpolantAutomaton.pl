@@ -44,6 +44,7 @@
 :- use_module(library(lists)).
 :- use_module(ciao_yices(ciao_yices_2)).
 
+:- include(chclibs(get_options)).
 :- include(chclibs(common)).
 
 recognised_option('-prg',  programO(R),[R]).

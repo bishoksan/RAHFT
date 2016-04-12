@@ -7,6 +7,7 @@
 
 :- use_module(chclibs(timer_ciao)).
 
+:- include(chclibs(get_options)).
 :- include(chclibs(common)).
 
 :- dynamic(prop/2).
