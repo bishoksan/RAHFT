@@ -3,7 +3,7 @@
 :- use_module(library(lists)).
 :- use_module(library(dynamic)).
 :- use_module(library(read)).
-:- use_module(chclibs(duplVar)).
+:- use_module(chclibs(common), [writeAtomEq/4]).
 
 :- dynamic my_clause/3.
 
