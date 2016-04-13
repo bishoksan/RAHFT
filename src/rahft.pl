@@ -34,9 +34,6 @@
 
 :- use_module(library(process)). % invoking external processes
 
-%dummy option remove later
-recognised_option(_,_,_).
-
 % stores output of the tool
 logfile('result.txt').
 
@@ -117,16 +114,15 @@ refineHorn(F_SP, F_FTA, F_DFTA,  F_SPLIT, F_TRACETERM, F_REFINE, WithInterpolant
 % ---------------------------------------------------------------------------
 
 printRahftOutput(LogS, Prog, Safety, Iteration, Time):-
+	printRahftOutput_(LogS, Prog, Safety, Iteration, Time),
+	printRahftOutput_(user_output, Prog, Safety, Iteration, Time).
+
+printRahftOutput_(LogS, Prog, Safety, Iteration, Time):-
 	format(LogS, 'RAHFT: {', []),
 	format(LogS, 'Program: ~w, ', [Prog]),
 	format(LogS, 'Safety: ~w, ', [Safety]),
 	format(LogS, 'Iteration: ~w, ', [Iteration]),
-	format(LogS, 'Time: ~w millisecs.} ~n', [Time]),
-    format( 'RAHFT: {', []),
-	format( 'Program: ~w, ', [Prog]),
-	format( 'Safety: ~w, ', [Safety]),
-	format( 'Iteration: ~w, ', [Iteration]),
-	format( 'Time: ~w millisecs.} ~n', [Time]).
+	format(LogS, 'Time: ~w millisecs.} ~n', [Time]).
 
 remove_resultdir(ResultDir) :-
 	( file_exists(ResultDir) -> remove_dir(ResultDir) ; true ).
@@ -136,12 +132,10 @@ remove_resultdir(ResultDir) :-
 % ---------------------------------------------------------------------------
 
 displayHelpMenu:-
-	%format( 'Error: Input File missing ~n', []),
-	%format( 'Usage: rahft <Input File> <Option>* ~n', []),
-	format(user_error, "~n Usage: rahft <prog> <Option>* ~n~n", []),
-	format( 'Option: ~n', []),
-	format( '-int:  uses interpolant automaton for trace generalisation during refinement~n', []),
-	format( '-help: display this help menu~n', []).
+	format(user_error, "~nUsage: rahft <prog> [<Options>]~n~n", []),
+	format(user_error, "Options:~n", []),
+	format(user_error, "-int:  uses interpolant automaton for trace generalisation during refinement~n", []),
+	format(user_error, "-help: display this help menu~n", []).
 
 % ---------------------------------------------------------------------------
 % main procedure RAHFT
@@ -152,45 +146,42 @@ main(['-help']) :- !,
 main([Prog]) :- !,
 	applyRAHFT(Prog, '$NOINTERPOLANTAUT', '$NOMODEL').
 main([Prog, '-model']) :- !,
-	applyRAHFT(Prog, '$NOINTERPOLANTAUT','model').
+	applyRAHFT(Prog, '$NOINTERPOLANTAUT', 'model').
 main([Prog,'-int']) :- !,
 	applyRAHFT(Prog, 'int', '$NOMODEL').
 main([Prog,'-itr', N]) :- !,
-    convert2num(N,N1),
+	convert2num(N,N1),
 	applyRAHFT_Bounded(Prog, '$NOINTERPOLANTAUT', '$NOMODEL', N1).
 main([Prog,'-sp', OFile]) :- !,
-    hornSpecialise(Prog, OFile).
+	hornSpecialise(Prog, OFile).
 main(_) :- !,
 	displayHelpMenu.
 
 
 applyRAHFT_Bounded(Prog1, WithInterpolant, ShowModel, N):-
-    write('entered here '), nl,
-    logfile(LogFile),
+	write('entered here '), nl,
+	logfile(LogFile),
 	open(LogFile, append, LogS),
 	%creating temporary directory for intermediate files
 	mktempdir_in_tmp('rahft-XXXXXXXX', ResultDir),
 	format( "temp dir ~w~n", [ResultDir]),
 	K = 0,
-    path_basename(Prog1, F),
-    createTmpFilePP(ResultDir, F, F_QA, QA_CPA, F_CPA, F_SP,F_WidenPoints, F_TRACETERM, F_THRESHOLD),
-    createTmpFileRef(ResultDir, F, F_FTA, F_DFTA, F_SPLIT, F_REFINE),
-
-    statistics(runtime,[START|_]),
-    abstract_refine_bounded(N, LogS,  Prog1, K, Result, K1, WithInterpolant,  F_QA, QA_CPA, F_CPA, F_SP,F_WidenPoints, F_TRACETERM, F_THRESHOLD, F_FTA, F_DFTA, F_SPLIT, F_REFINE),
+	path_basename(Prog1, F),
+	createTmpFilePP(ResultDir, F, F_QA, QA_CPA, F_CPA, F_SP,F_WidenPoints, F_TRACETERM, F_THRESHOLD),
+	createTmpFileRef(ResultDir, F, F_FTA, F_DFTA, F_SPLIT, F_REFINE),
+	%
+	statistics(runtime,[START|_]),
+	abstract_refine_bounded(N, LogS,  Prog1, K, Result, K1, WithInterpolant,  F_QA, QA_CPA, F_CPA, F_SP,F_WidenPoints, F_TRACETERM, F_THRESHOLD, F_FTA, F_DFTA, F_SPLIT, F_REFINE),
 	statistics(runtime,[END|_]),
-    (ShowModel= '$NOMODEL' -> true
-    ;
-        (Result=safe ->
-            showModel(QA_CPA, F_CPA, Prog1, F_REFINE)
-        ;
-            (Result=unsafe ->
+	( ShowModel= '$NOMODEL' -> true
+	; ( Result=safe ->
+              showModel(QA_CPA, F_CPA, Prog1, F_REFINE)
+	  ; ( Result=unsafe ->
                 write('There is no model since the program is unsafe'), nl
-            ;
-                write('We do not know if there exists a model for the program'), nl
+            ; write('We do not know if there exists a model for the program'), nl
             )
-        )
-    ),
+	  )
+	),
 	DIFF is END - START,
 	path_basename(Prog1, F),
 	printRahftOutput(LogS,F, Result, K1, DIFF),
@@ -198,33 +189,29 @@ applyRAHFT_Bounded(Prog1, WithInterpolant, ShowModel, N):-
 	remove_resultdir(ResultDir),
 	close(LogS).
 
-
 applyRAHFT(Prog1, WithInterpolant, ShowModel) :-
 	logfile(LogFile),
 	open(LogFile, append, LogS),
 	%creating temporary directory for intermediate files
 	mktempdir_in_tmp('rahft-XXXXXXXX', ResultDir),
-	format( "temp dir ~w~n", [ResultDir]),
+	format("temp dir ~w~n", [ResultDir]),
 	K = 0,
-    path_basename(Prog1, F),
-    createTmpFilePP(ResultDir, F, F_QA, QA_CPA, F_CPA, F_SP,F_WidenPoints, F_TRACETERM, F_THRESHOLD),
-    createTmpFileRef(ResultDir, F, F_FTA, F_DFTA, F_SPLIT, F_REFINE),
-
-    statistics(runtime,[START|_]),
-    abstract_refine(LogS,  Prog1, K, Result, K1, WithInterpolant,  F_QA, QA_CPA, F_CPA, F_SP,F_WidenPoints, F_TRACETERM, F_THRESHOLD, F_FTA, F_DFTA, F_SPLIT, F_REFINE),
+	path_basename(Prog1, F),
+	createTmpFilePP(ResultDir, F, F_QA, QA_CPA, F_CPA, F_SP,F_WidenPoints, F_TRACETERM, F_THRESHOLD),
+	createTmpFileRef(ResultDir, F, F_FTA, F_DFTA, F_SPLIT, F_REFINE),
+	%
+	statistics(runtime,[START|_]),
+	abstract_refine(LogS,  Prog1, K, Result, K1, WithInterpolant,  F_QA, QA_CPA, F_CPA, F_SP,F_WidenPoints, F_TRACETERM, F_THRESHOLD, F_FTA, F_DFTA, F_SPLIT, F_REFINE),
 	statistics(runtime,[END|_]),
-    (ShowModel= '$NOMODEL' -> true
-    ;
-        (Result=safe ->
-            showModel(QA_CPA, F_CPA, Prog1, F_REFINE)
-        ;
-            (Result=unsafe ->
-                write('There is no model since the program is unsafe'), nl
-            ;
-                write('We do not know if there exists a model for the program'), nl
+	( ShowModel = '$NOMODEL' -> true
+	; ( Result=safe ->
+              showModel(QA_CPA, F_CPA, Prog1, F_REFINE)
+	  ; ( Result=unsafe ->
+	        write('There is no model since the program is unsafe'), nl
+            ; write('We do not know if there exists a model for the program'), nl
             )
-        )
-    ),
+	  )
+	),
 	DIFF is END - START,
 	path_basename(Prog1, F),
 	printRahftOutput(LogS,F, Result, K1, DIFF),
@@ -237,11 +224,11 @@ abstract_refine(LogS,  Prog1, K, Result, K2, WithInterpolant,  F_QA, QA_CPA, F_C
 	( Ret1 = safe ->
 	    Result = Ret1,
 	    K2 = K,
-	    format("the  program is safe~n", [])
+	    format("the program is safe~n", [])
 	; Ret1 = unsafe ->
 	    Result= Ret1,
 	    K2 = K,
-	    format("the  program is unsafe~n", [])
+	    format("the program is unsafe~n", [])
 	; % refinement with FTA
 	  refineHorn(F_SP, F_FTA, F_DFTA,  F_SPLIT, F_TRACETERM, F_REFINE, WithInterpolant),
 	  K1 is K + 1,
@@ -249,30 +236,30 @@ abstract_refine(LogS,  Prog1, K, Result, K2, WithInterpolant,  F_QA, QA_CPA, F_C
 	).
 
 abstract_refine_bounded(Itr, LogS,  Prog1, K, Result, K2, WithInterpolant,  F_QA, QA_CPA, F_CPA, F_SP,F_WidenPoints, F_TRACETERM, F_THRESHOLD, F_FTA, F_DFTA, F_SPLIT, F_REFINE) :-
-    K=<Itr,
-    !,
+	K=<Itr,
+	!,
 	verifyCPA(Prog1, F_QA, QA_CPA, F_CPA, F_SP, F_WidenPoints, F_TRACETERM, F_THRESHOLD, Ret1),
 	( Ret1 = safe ->
 	    Result = Ret1,
 	    K2 = K,
-	    format("the  program is safe~n", [])
+	    format("the program is safe~n", [])
 	; Ret1 = unsafe ->
 	    Result= Ret1,
 	    K2 = K,
-	    format("the  program is unsafe~n", [])
+	    format("the program is unsafe~n", [])
 	; % refinement with FTA
 	  refineHorn(F_SP, F_FTA, F_DFTA,  F_SPLIT, F_TRACETERM, F_REFINE, WithInterpolant),
 	  K1 is K + 1,
 	  abstract_refine_bounded(Itr, LogS,  F_REFINE, K1, Result, K2, WithInterpolant, F_QA, QA_CPA, F_CPA, F_SP,F_WidenPoints, F_TRACETERM, F_THRESHOLD, F_FTA, F_DFTA, F_SPLIT, F_REFINE)
 	).
 abstract_refine_bounded(Itr, _,  _, _, unknown, Itr, _,  _, _, _, _,_, _, _, _, _, _, _):-
-    !.
+	!.
 
 hornSpecialise(Prog, OutputFile):-
-    atom_concat(Prog, '_output', ResultDir),
+	atom_concat(Prog, '_output', ResultDir),
 	mkpath(ResultDir),
 	format( "temp dir ~w~n", [ResultDir]),
-    path_basename(Prog, F),
+	path_basename(Prog, F),
 	createTmpFilePP(ResultDir, F, F_QA, QA_CPA,_,_,F_WidenPoints, _, F_THRESHOLD),
 	statistics(runtime,[START|_]),
 	preProcessHorn(Prog, F_QA, QA_CPA, F_WidenPoints, F_THRESHOLD, OutputFile),
@@ -288,61 +275,61 @@ if F_CPA exists it shows the model from F_CPA, else from QA_CPA
 if F_REFINE exists then the model corresponds to this else to Prog
 */
 showModel(QA_CPA, F_CPA,Prog, F_REFINE):-
-    write('Model: '), nl,
-    (file_exists(F_CPA)-> showInv(F_CPA); showInvQA(QA_CPA)),
-    nl,
-    write('For the program: '), nl,
-    (file_exists(F_REFINE)-> showProg(F_REFINE); showProg(Prog)),
-    nl.
+	write('Model: '), nl,
+	( file_exists(F_CPA) -> showInv(F_CPA) ; showInvQA(QA_CPA) ),
+	nl,
+	write('For the program: '), nl,
+	( file_exists(F_REFINE) -> showProg(F_REFINE) ; showProg(Prog) ),
+	nl.
 
 showInv(F):-
-    open(F, read, S),
-    read(S, Inv),
-    writeToConsole(S, Inv),
-    close(S).
+	open(F, read, S),
+	read(S, Inv),
+	writeToConsole(S, Inv),
+	close(S).
 
 writeToConsole(_, end_of_file):-
-    !.
+	!.
 writeToConsole(S, Inv):-
-    numbervars(Inv, 0, _),
-    write('.'),
-    nl,
-    read(S, Inv1),
-    writeToConsole(S, Inv1).
+	numbervars(Inv, 0, _),
+	write('.'),
+	nl,
+	read(S, Inv1),
+	writeToConsole(S, Inv1).
 
 showProg(F):-
-    load_file(F),
-    writeCls.
+	load_file(F),
+	writeCls.
 
 writeCls:-
-    my_clause(H, B, _),
-    numbervars((H, B), 0, _),
-    writeq(H),
-    write(' :- '),
-    list2Conj(B, B1),
-    write(B1),
-    write('.'),
-    nl,
-    fail.
+	my_clause(H, B, _),
+	numbervars((H, B), 0, _),
+	writeq(H),
+	write(' :- '),
+	list2Conj(B, B1),
+	write(B1),
+	write('.'),
+	nl,
+	fail.
 writeCls.
 
 
 showInvQA(F):-
-    open(F, read, S),
-    read(S, Inv),
-    writeToConsoleQA(S, Inv),
-    close(S).
+	open(F, read, S),
+	read(S, Inv),
+	writeToConsoleQA(S, Inv),
+	close(S).
 
 writeToConsoleQA(_, end_of_file):-
-    !.
+	!.
 writeToConsoleQA(S, (H:-Inv)):-
-    stripSuffix(H, H1),
-    numbervars((H1:-Inv), 0, _),
-    write((H1:-Inv)),
-    write('.'),
-    nl,
-    read(S, Inv1),
-    writeToConsoleQA(S, Inv1).
+	stripSuffix(H, H1),
+	numbervars((H1:-Inv), 0, _),
+	write((H1:-Inv)),
+	write('.'),
+	nl,
+	read(S, Inv1),
+	writeToConsoleQA(S, Inv1).
 
 stripSuffix(F,F1) :-
 	F =.. [P|Xs],
@@ -410,7 +397,7 @@ createTmpFilePP(ResultDir, F, F_QA, QA_CPA, F_CPA, F_SP, F_WidenPoints, F_Tracet
 	wideningPoints_file(ResultDir, F_WidenPoints),
 	traceTerm_file(ResultDir, F_Traceterm),
 	threshold_file(ResultDir, F_Threshold),
-    cpa_file(ResultDir, F, F_CPA).
+	cpa_file(ResultDir, F, F_CPA).
 
 createTmpFileRef(ResultDir, F, F_FTA, F_DFTA, F_SPLIT, F_REFINE):-
 	fta_file(ResultDir, F, F_FTA),
