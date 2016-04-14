@@ -125,7 +125,7 @@ generateIFTA:-
     numbervars(Vars,0,_),
     collectBodyInterpolants(B, BIs, InterpolantIds),
     append(Cs, BIs, BodyInterpolants),
-    makeRealVars(Vars, YicesVars),
+    yices_vars(Vars, real, YicesVars),
     (H=false ->
         yices_unsat((BodyInterpolants), YicesVars),
         makeFTA(H,B,CId, _, InterpolantIds)
@@ -155,7 +155,7 @@ generateIFTA.
 checkClsValidity(Bs, Cs, H, Vars, CId):-
     collectBodyInterpolants(Bs, BIs),
     append(Cs, BIs, BodyInterpolants),
-    makeRealVars(Vars, YicesVars),
+    yices_vars(Vars, real, YicesVars),
     (H=false ->
         yices_unsat((BodyInterpolants), YicesVars),
         makeFTA(H,Bs,CId)
