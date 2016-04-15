@@ -13,6 +13,12 @@ _base=$(e=$0;while test -L "$e";do d=$(dirname "$e");e=$(readlink "$e");\
 set -e
 
 solver=$CIAOPATH/build/bin/rahft
+# TODO: try with -int, etc.
+#   
+solveropts=
+if [ $# -gt 0 ]; then
+    solveropts="$*"
+fi
 
 testdir="../examples"
 tests="\
@@ -34,7 +40,8 @@ cd "$_base"
 
 rm -f "$results"
 for i in $tests; do
-    $solver "$testdir/$i"
+    echo "### SOLVING $i (opts: $solveropts) ###"
+    $solver "$testdir/$i" $solveropts
 done
 
 if diff <(sed 's/, Time:.*/}/g' "$results") \
@@ -43,3 +50,4 @@ if diff <(sed 's/, Time:.*/}/g' "$results") \
 else
     printf "\nTESTS DIFFER, SOMETHING MAY BE WRONG\n"
 fi
+
