@@ -43,12 +43,15 @@ main(ArgV) :-
 	
 setOptions(ArgV,File,OutS) :-
 	get_options(ArgV,Options,_),
-	(member(programO(File),Options) -> true; 
-			write(user_output,'No input file given.'),nl(user_output),fail),
-	(member(outputFile(OutFile),Options), open(OutFile,write,OutS); 
-				OutS=user_output),
-	(member(propFile(PFile),Options), readPropFile(PFile); 
-			true).
+	( member(programO(File),Options) -> true
+	; write(user_output,'No input file given.'),nl(user_output),fail
+	),
+	( member(outputFile(OutFile),Options), open(OutFile,write,OutS)
+	; OutS=user_output
+	),
+	( member(propFile(PFile),Options), readPropFile(PFile)
+	; true
+	).
 
 cleanup :-
 	retractall(fact(_,_)),

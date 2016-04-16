@@ -34,12 +34,70 @@
 
 :- use_module(library(process)). % invoking external processes
 
+:- include(chclibs(get_options)).
+
 % stores output of the tool
 logfile('result.txt').
 
 % (debug)
 % go :-
 % 	rahft:main(['/Users/kafle/Desktop/RAHFT/examples/running.nts.pl']).
+
+% ---------------------------------------------------------------------------
+% Main
+% ---------------------------------------------------------------------------
+
+% printing output of RAHFT
+displayHelpMenu:-
+	help_msg(Str),
+	format(user_error, "~s~n", [Str]).
+
+help_msg(
+"Usage: rahft <prog> [<Options>]
+
+Options:
+ -help    display this help menu
+ -int     uses interpolant automaton for trace generalisation during refinement
+ -model   show model
+ -sp      only horn specialization
+ -itr N   limit abstract refine iterations 
+").
+
+recognised_option('-help',  help, []).
+recognised_option('-model', model, []).
+recognised_option('-int',   int, []).
+recognised_option('-sp',    horn_specialise(F), [F]).
+recognised_option('-itr',   bounded(N), [N]).
+
+main(ArgV) :-
+	get_options(ArgV,Options,Args0),
+	( member(help, Options) ->
+	    displayHelpMenu
+	; \+ Args0 = [_] -> % wrong args
+	    displayHelpMenu
+	; Args0 = [F],
+	  main_(Options, F)
+	).
+
+main_(Options, Prog) :-
+	member(horn_specialise(OFile), Options),
+	!,
+	hornSpecialise(Prog, OFile).
+main_(Options, Prog) :-
+	( member(model, Options) ->
+	    ShowModel = yes
+	; ShowModel = no
+	),
+	( member(int, Options) ->
+	    WithInterpolant = 'int'
+	; WithInterpolant = '$NOINTERPOLANTAUT'
+	),
+	( member(bounded(N), Options) ->
+	    convert2num(N,N1),
+	    Bounded = bounded(N1)
+	; Bounded = unbounded
+	),
+	applyRAHFT(Prog, WithInterpolant, ShowModel, Bounded).
 
 % ---------------------------------------------------------------------------
 % Horn clause pre-processing
@@ -128,82 +186,24 @@ remove_resultdir(ResultDir) :-
 	( file_exists(ResultDir) -> remove_dir(ResultDir) ; true ).
 
 % ---------------------------------------------------------------------------
-% printing output of RAHFT
-% ---------------------------------------------------------------------------
-
-displayHelpMenu:-
-	format(user_error, "~nUsage: rahft <prog> [<Options>]~n~n", []),
-	format(user_error, "Options:~n", []),
-	format(user_error, "-int:  uses interpolant automaton for trace generalisation during refinement~n", []),
-	format(user_error, "-help: display this help menu~n", []).
-
-% ---------------------------------------------------------------------------
 % main procedure RAHFT
 % ---------------------------------------------------------------------------
 
-main(['-help']) :- !,
-	displayHelpMenu.
-main([Prog]) :- !,
-	applyRAHFT(Prog, '$NOINTERPOLANTAUT', '$NOMODEL').
-main([Prog, '-model']) :- !,
-	applyRAHFT(Prog, '$NOINTERPOLANTAUT', 'model').
-main([Prog,'-int']) :- !,
-	applyRAHFT(Prog, 'int', '$NOMODEL').
-main([Prog,'-itr', N]) :- !,
-	convert2num(N,N1),
-	applyRAHFT_Bounded(Prog, '$NOINTERPOLANTAUT', '$NOMODEL', N1).
-main([Prog,'-sp', OFile]) :- !,
-	hornSpecialise(Prog, OFile).
-main(_) :- !,
-	displayHelpMenu.
-
-
-applyRAHFT_Bounded(Prog1, WithInterpolant, ShowModel, N):-
-	write('entered here '), nl,
+applyRAHFT(Prog1, WithInterpolant, ShowModel, Bounded) :-
 	logfile(LogFile),
 	open(LogFile, append, LogS),
 	%creating temporary directory for intermediate files
 	mktempdir_in_tmp('rahft-XXXXXXXX', ResultDir),
-	format( "temp dir ~w~n", [ResultDir]),
+	%format("temp dir ~w~n", [ResultDir]),
 	K = 0,
 	path_basename(Prog1, F),
 	createTmpFilePP(ResultDir, F, F_QA, QA_CPA, F_CPA, F_SP,F_WidenPoints, F_TRACETERM, F_THRESHOLD),
 	createTmpFileRef(ResultDir, F, F_FTA, F_DFTA, F_SPLIT, F_REFINE),
 	%
 	statistics(runtime,[START|_]),
-	abstract_refine_bounded(N, LogS,  Prog1, K, Result, K1, WithInterpolant,  F_QA, QA_CPA, F_CPA, F_SP,F_WidenPoints, F_TRACETERM, F_THRESHOLD, F_FTA, F_DFTA, F_SPLIT, F_REFINE),
+	abstract_refine(Bounded, LogS,  Prog1, K, Result, K1, WithInterpolant,  F_QA, QA_CPA, F_CPA, F_SP,F_WidenPoints, F_TRACETERM, F_THRESHOLD, F_FTA, F_DFTA, F_SPLIT, F_REFINE),
 	statistics(runtime,[END|_]),
-	( ShowModel= '$NOMODEL' -> true
-	; ( Result=safe ->
-              showModel(QA_CPA, F_CPA, Prog1, F_REFINE)
-	  ; ( Result=unsafe ->
-                write('There is no model since the program is unsafe'), nl
-            ; write('We do not know if there exists a model for the program'), nl
-            )
-	  )
-	),
-	DIFF is END - START,
-	path_basename(Prog1, F),
-	printRahftOutput(LogS,F, Result, K1, DIFF),
-	%remove the directory of intermediate files
-	remove_resultdir(ResultDir),
-	close(LogS).
-
-applyRAHFT(Prog1, WithInterpolant, ShowModel) :-
-	logfile(LogFile),
-	open(LogFile, append, LogS),
-	%creating temporary directory for intermediate files
-	mktempdir_in_tmp('rahft-XXXXXXXX', ResultDir),
-	format("temp dir ~w~n", [ResultDir]),
-	K = 0,
-	path_basename(Prog1, F),
-	createTmpFilePP(ResultDir, F, F_QA, QA_CPA, F_CPA, F_SP,F_WidenPoints, F_TRACETERM, F_THRESHOLD),
-	createTmpFileRef(ResultDir, F, F_FTA, F_DFTA, F_SPLIT, F_REFINE),
-	%
-	statistics(runtime,[START|_]),
-	abstract_refine(LogS,  Prog1, K, Result, K1, WithInterpolant,  F_QA, QA_CPA, F_CPA, F_SP,F_WidenPoints, F_TRACETERM, F_THRESHOLD, F_FTA, F_DFTA, F_SPLIT, F_REFINE),
-	statistics(runtime,[END|_]),
-	( ShowModel = '$NOMODEL' -> true
+	( ShowModel = no -> true
 	; ( Result=safe ->
               showModel(QA_CPA, F_CPA, Prog1, F_REFINE)
 	  ; ( Result=unsafe ->
@@ -219,41 +219,24 @@ applyRAHFT(Prog1, WithInterpolant, ShowModel) :-
 	remove_resultdir(ResultDir),
 	close(LogS).
 
-abstract_refine(LogS,  Prog1, K, Result, K2, WithInterpolant,  F_QA, QA_CPA, F_CPA, F_SP,F_WidenPoints, F_TRACETERM, F_THRESHOLD, F_FTA, F_DFTA, F_SPLIT, F_REFINE) :-
-	verifyCPA(Prog1, F_QA, QA_CPA, F_CPA, F_SP, F_WidenPoints, F_TRACETERM, F_THRESHOLD, Ret1),
-	( Ret1 = safe ->
-	    Result = Ret1,
-	    K2 = K,
-	    format("the program is safe~n", [])
-	; Ret1 = unsafe ->
-	    Result= Ret1,
-	    K2 = K,
-	    format("the program is unsafe~n", [])
-	; % refinement with FTA
-	  refineHorn(F_SP, F_FTA, F_DFTA,  F_SPLIT, F_TRACETERM, F_REFINE, WithInterpolant),
-	  K1 is K + 1,
-	  abstract_refine(LogS,  F_REFINE, K1, Result, K2, WithInterpolant, F_QA, QA_CPA, F_CPA, F_SP,F_WidenPoints, F_TRACETERM, F_THRESHOLD, F_FTA, F_DFTA, F_SPLIT, F_REFINE)
-	).
-
-abstract_refine_bounded(Itr, LogS,  Prog1, K, Result, K2, WithInterpolant,  F_QA, QA_CPA, F_CPA, F_SP,F_WidenPoints, F_TRACETERM, F_THRESHOLD, F_FTA, F_DFTA, F_SPLIT, F_REFINE) :-
-	K=<Itr,
-	!,
-	verifyCPA(Prog1, F_QA, QA_CPA, F_CPA, F_SP, F_WidenPoints, F_TRACETERM, F_THRESHOLD, Ret1),
-	( Ret1 = safe ->
-	    Result = Ret1,
-	    K2 = K,
-	    format("the program is safe~n", [])
-	; Ret1 = unsafe ->
-	    Result= Ret1,
-	    K2 = K,
-	    format("the program is unsafe~n", [])
-	; % refinement with FTA
-	  refineHorn(F_SP, F_FTA, F_DFTA,  F_SPLIT, F_TRACETERM, F_REFINE, WithInterpolant),
-	  K1 is K + 1,
-	  abstract_refine_bounded(Itr, LogS,  F_REFINE, K1, Result, K2, WithInterpolant, F_QA, QA_CPA, F_CPA, F_SP,F_WidenPoints, F_TRACETERM, F_THRESHOLD, F_FTA, F_DFTA, F_SPLIT, F_REFINE)
-	).
-abstract_refine_bounded(Itr, _,  _, _, unknown, Itr, _,  _, _, _, _,_, _, _, _, _, _, _):-
+abstract_refine(bounded(Itr), _,  _, K, unknown, Itr, _,  _, _, _, _,_, _, _, _, _, _, _):-
+	K > Itr, % Exceeded allowed number of iterations, stop
 	!.
+abstract_refine(Bounded, LogS,  Prog1, K, Result, K2, WithInterpolant,  F_QA, QA_CPA, F_CPA, F_SP,F_WidenPoints, F_TRACETERM, F_THRESHOLD, F_FTA, F_DFTA, F_SPLIT, F_REFINE) :-
+	verifyCPA(Prog1, F_QA, QA_CPA, F_CPA, F_SP, F_WidenPoints, F_TRACETERM, F_THRESHOLD, Ret1),
+	( Ret1 = safe ->
+	    Result = Ret1,
+	    K2 = K,
+	    format("the program is safe~n", [])
+	; Ret1 = unsafe ->
+	    Result= Ret1,
+	    K2 = K,
+	    format("the program is unsafe~n", [])
+	; % refinement with FTA
+	  refineHorn(F_SP, F_FTA, F_DFTA,  F_SPLIT, F_TRACETERM, F_REFINE, WithInterpolant),
+	  K1 is K + 1,
+	  abstract_refine(Bounded, LogS,  F_REFINE, K1, Result, K2, WithInterpolant, F_QA, QA_CPA, F_CPA, F_SP,F_WidenPoints, F_TRACETERM, F_THRESHOLD, F_FTA, F_DFTA, F_SPLIT, F_REFINE)
+	).
 
 hornSpecialise(Prog, OutputFile):-
 	atom_concat(Prog, '_output', ResultDir),

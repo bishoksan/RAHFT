@@ -50,7 +50,7 @@ checkCounterExample(Cex, F, Result) :-
 	),
 	end_ppl,
 	Result = Result0.
-	
+
 checkTrace([],_,_).
 checkTrace([B|Bs],Cs,[T|Ts]) :-
 	T =..[C|Ts1],
