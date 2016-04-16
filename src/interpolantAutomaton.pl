@@ -52,17 +52,13 @@ recognised_option('-trace', traces(R),[R]).
 recognised_option('-o',generateAut(R),[R]).
 
 go1:-
-    ppl_initialize,
     %T= counterexample(c4(c1)),
     %T= counterexample(c4(c2(c1,c1))),
     T1=counterexample(c4(c3(c1, c2(c1)))),
-    %yices_init,
     %computeInterpolantAutomaton('examples/mc91.pl',false,T),
     %computeInterpolantAutomaton('examples/fib.pl',false,T),
     computeInterpolantAutomaton('examples/trabs.pl',false,T1),
-    %yices_exit,
-    printFTA(T1, user_output),
-    ppl_finalize.
+    printFTA(T1, user_output).
 
 go:-
     go2('Examples/running.nts.pl.pe.pl', 'Examples/trace.pl').
@@ -75,14 +71,10 @@ go2(F, T):-
 main(ArgV):-
     cleanup,
     setOptions(ArgV,Input,[ErrorTrace|_], OutS), %just considering the first error trace
-    ppl_initialize,
-    %yices_init,
     computeInterpolantAutomaton(Input,false,ErrorTrace),
-    %yices_exit,
     write('The interpolant automaton is : '), nl,
     printFTA(ErrorTrace, OutS),
-    close(OutS),
-    ppl_finalize.
+    close(OutS).
 
 setOptions(ArgV,Input,Traces, OutS) :-
 	get_options(ArgV,Options,_),
@@ -100,25 +92,28 @@ readErrorTrace(PFile, Traces):-
     %read(S, counterexample(Trace)),
     close(S).
 
-%some optionmisations here, if a clause is added do not evaluate other options at all
+%some optimizations here, if a clause is added do not evaluate other options at all
 computeInterpolantAutomaton(F,A,CExTrace):-
-    computeTreeInterpolants(F,A,CExTrace),
+    ppl_initialize,
+    IntF = '/tmp/interpolant.props', % TODO: use temporary?
+    computeTreeInterpolants(F,A,CExTrace,IntF),
     yices_init,
-    generateIFTA,
-    yices_exit.
+    generateIFTA(IntF),
+    yices_exit,
+    ppl_finalize.
 
-computeTreeInterpolants(F,A,CExTrace):-
+computeTreeInterpolants(F,A,CExTrace,IntF):-
     CExTrace=counterexample(Trace),
     load_file(F),
     interpolantTree(A,Trace,Tree, 1), % tree nodes begin with 1
     %write(Tree), nl,
-    open('/tmp/interpolant.props', write, S),
+    open(IntF, write, S),
     writeInterpolants(S,Tree),
     close(S).
 
 
-generateIFTA:-
-    readInterpolants,
+generateIFTA(IntF) :-
+    readInterpolants(IntF),
     my_clause(H, Body, CId),
     separate_constraints(Body, Cs, B),
     varset((H,Body), Vars),
@@ -137,36 +132,33 @@ generateIFTA:-
         makeFTA(H,B,CId, IId, InterpolantIds)
     ),
     fail.
-generateIFTA.
+generateIFTA(_).
 
 
-
-/*
-generateIFTA:-
-    readInterpolants,
-    my_clause(H, Body, CId),
-    separate_constraints(Body, Cs, B),
-    varset((H,Body), Vars),
-    numbervars(Vars,0,_),
-    checkClsValidity(B, Cs, H, Vars, CId),
-    fail.
-generateIFTA.
-
-checkClsValidity(Bs, Cs, H, Vars, CId):-
-    collectBodyInterpolants(Bs, BIs),
-    append(Cs, BIs, BodyInterpolants),
-    yices_vars(Vars, real, YicesVars),
-    (H=false ->
-        yices_unsat((BodyInterpolants), YicesVars),
-        makeFTA(H,Bs,CId)
-    ;
-        collectDisjInterpolants([H], I),
-        getNegHeadFormula(I, NI),
-        append(NI, BodyInterpolants, ClsFormula),
-        yices_unsat(ClsFormula, YicesVars),
-        makeFTA(H,Bs,CId)
-    ),!.
-*/
+% generateIFTA(IntF) :-
+%     readInterpolants(IntF),
+%     my_clause(H, Body, CId),
+%     separate_constraints(Body, Cs, B),
+%     varset((H,Body), Vars),
+%     numbervars(Vars,0,_),
+%     checkClsValidity(B, Cs, H, Vars, CId),
+%     fail.
+% generateIFTA(_).
+% 
+% checkClsValidity(Bs, Cs, H, Vars, CId):-
+%     collectBodyInterpolants(Bs, BIs),
+%     append(Cs, BIs, BodyInterpolants),
+%     yices_vars(Vars, real, YicesVars),
+%     (H=false ->
+%         yices_unsat((BodyInterpolants), YicesVars),
+%         makeFTA(H,Bs,CId)
+%     ;
+%         collectDisjInterpolants([H], I),
+%         getNegHeadFormula(I, NI),
+%         append(NI, BodyInterpolants, ClsFormula),
+%         yices_unsat(ClsFormula, YicesVars),
+%         makeFTA(H,Bs,CId)
+%     ),!.
 
 
 writeInterpolants(S, tree(false,_,_,SubTrees,_, _, _)):-
@@ -193,13 +185,11 @@ makeFTA(H,Bs,Id, HId, InterpolantIds) :-
 	functor(H,P,_),
 	getPreds(Bs,Qs,InterpolantIds),
 	LHS =.. [Id|Qs],
-    (P=false ->
-        assertFTATransition(LHS, errortrace)
-    ;
-        renameHead(P, RP, HId),
-        assertFTATransition(LHS, RP)
-    ),
-     nl.
+	( P=false ->
+	    assertFTATransition(LHS, errortrace)
+	; renameHead(P, RP, HId),
+	  assertFTATransition(LHS, RP)
+	).
 
 renameHead(P, P1, PId):-
     name(P, PName),
@@ -235,8 +225,8 @@ collectDisjInterpolants([B|Bs], [BDInterpolants|BsDInterpolants]):-
     listofList2Disj(BsInterpolants, BsDInterpolants).
 collectDisjInterpolants([], []).
 
-readInterpolants:-
-    open('/tmp/interpolant.props', read, S),
+readInterpolants(F) :-
+    open(F, read, S),
     read(S,C),
     storeInterpolants(S,C),
     close(S).

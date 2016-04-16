@@ -9,45 +9,47 @@
 :- use_module(chclibs(program_loader)).
 :- use_module(chclibs(common)).
 
-main([F, TraceF,Result]) :-
-	unsafe(F,TraceF, Result).
+% NOTE: TraceF is the outcome of cpascc.pl with -cex option
+
+main([F, TraceF, Result]) :-
+	unsafe(F, TraceF, Result).
 	
 unsafe(F,PFile, Result) :-
+	readCex(PFile,Cex),
+	checkCounterExample(Cex,F, Result).
+	
+readCex(PFile,Cex) :-
 	open(PFile,read,S),
 	read(S,C),
 	existsCex(S,C,Cex),
-	close(S),
-	checkCounterExample(Cex,F, Result).
-	
+	close(S).
+
 existsCex(_,end_of_file,no) :-
 	!.
 existsCex(_,(cex(Cex)),Cex) :-
-	!,
-	write(user_output,Cex),
-	nl(user_output).
+	!.
 existsCex(_,(counterexample(Cex)),Cex) :-
-	!,
-	write(user_output,Cex),
-	nl(user_output).
+	!.
 existsCex(S,_,Cex) :-
 	read(S,C1),
 	existsCex(S,C1,Cex).
 	
-checkCounterExample(no,_, Result) :-
+checkCounterExample(no, _, Result) :-
 	!,
 	Result=safe.
-checkCounterExample(Cex,F, Result) :-
-	start_ppl,
+checkCounterExample(Cex, F, Result) :-
+	write(user_output,Cex),	nl(user_output),
+	%
 	load_file(F),
-	( checkTrace([false],[],[Cex])
-	; checkTrace([false_ans],[],[Cex])
+	start_ppl,
+	( ( checkTrace([false],[],[Cex])
+	  ; checkTrace([false_ans],[],[Cex])
+	  ) ->
+	    Result0=unsafe
+	; Result0=unknown
 	),
-	!,
 	end_ppl,
-	Result=unsafe.
-checkCounterExample(_,_, Result) :-
-	end_ppl,
-	Result=unknown.
+	Result = Result0.
 	
 checkTrace([],_,_).
 checkTrace([B|Bs],Cs,[T|Ts]) :-
