@@ -88,3 +88,5 @@ dependencies.
 3. Constraint Specialisation in Horn Clause Verification by Bishoksan
    Kafle and John P. Gallagher in PEPM 2015
    (http://akira.ruc.dk/~kafle/publications/pepm-15)
+
+4. Rahft: A tool for verifying Horn clauses using abstract interpretation and finite tree automata by Bishoksan Kafle, John P. Gallagher and Jose F. Morales to appear in CAV 2016.
