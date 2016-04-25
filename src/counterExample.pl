@@ -38,7 +38,7 @@ checkCounterExample(no, _, Result) :-
 	!,
 	Result=safe.
 checkCounterExample(Cex, F, Result) :-
-	write(user_output,Cex),	nl(user_output),
+	write(user_output,'Counter example: '),	write(user_output,Cex),	nl(user_output),
 	%
 	load_file(F),
 	start_ppl,

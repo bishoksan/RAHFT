@@ -26,6 +26,7 @@
 :- use_module(ftaRefine, [main/1]).
 :- use_module(interpolantAutomaton, [main/1]).
 :- use_module(checkFalseInFile, [checkForFalse/2]).
+:- use_module(integerProgram, [main/1]).
 
 :- use_module(library(write)).
 :- use_module(library(read)).
@@ -47,6 +48,9 @@ logfile('result.txt').
 % Main
 % ---------------------------------------------------------------------------
 
+:- data opt_array/0.
+:- data opt_debug_temps/0.
+
 % printing output of RAHFT
 displayHelpMenu:-
 	help_msg(Str),
@@ -59,15 +63,20 @@ Options:
  -help    display this help menu
  -int     uses interpolant automaton for trace generalisation during refinement
  -model   show model
+ -array   enable array constraints
  -sp      only horn specialization
  -itr N   limit abstract refine iterations 
+
+ -debug-temps    keep files for intermediate passes (debug)
 ").
 
 recognised_option('-help',  help, []).
 recognised_option('-model', model, []).
 recognised_option('-int',   int, []).
+recognised_option('-array', array, []).
 recognised_option('-sp',    horn_specialise(F), [F]).
 recognised_option('-itr',   bounded(N), [N]).
+recognised_option('-debug-temps', debug_temps, []).
 
 main(ArgV) :-
 	get_options(ArgV,Options,Args0),
@@ -76,8 +85,12 @@ main(ArgV) :-
 	; \+ Args0 = [_] -> % wrong args
 	    displayHelpMenu
 	; Args0 = [F],
+	  cleanup,
 	  main_(Options, F)
 	).
+
+cleanup :-
+	retractall_fact(opt_array).
 
 main_(Options, Prog) :-
 	member(horn_specialise(OFile), Options),
@@ -89,13 +102,21 @@ main_(Options, Prog) :-
 	; ShowModel = no
 	),
 	( member(int, Options) ->
-	    WithInterpolant = 'int'
-	; WithInterpolant = '$NOINTERPOLANTAUT'
+	    WithInterpolant = yes
+	; WithInterpolant = no
+	),
+	( member(array, Options) ->
+	    assertz_fact(opt_array)
+	; true
 	),
 	( member(bounded(N), Options) ->
 	    convert2num(N,N1),
 	    Bounded = bounded(N1)
 	; Bounded = unbounded
+	),
+	( member(debug_temps, Options) ->
+	    assertz_fact(opt_debug_temps)
+	; true
 	),
 	applyRAHFT(Prog, WithInterpolant, ShowModel, Bounded).
 
@@ -103,32 +124,73 @@ main_(Options, Prog) :-
 % Horn clause pre-processing
 % ---------------------------------------------------------------------------
 
-preProcessHorn(Prog, QAFile, QACPA, F_WidenPoints, F_Threshold, OutputFile):-
+preProcessHorn(Prog, F_Int, F_QA, QACPA, F_WidenPoints, F_Threshold, OutputFile):-
+	( opt_array ->
+	    % TODO:{arrays(1): "preprocess"}
+	    %   for each clause in P, apply 
+	    %    - constraint replacement algorithm of [1] (Section 5.2, page 338 RR1-WR3);
+	    %     step 1 of [1] (Section 5.3, page 344) // Note: This is “delete all write constraints”
+	    %   producing P2;
+	    format("Preprocessing array constraints~n", []),
+	    Prog2 = Prog,
+	    % TODO:{arrays(2): "integer_program"}
+	    format("Getting integer program~n", []),
+	    Prog2Int = F_Int,
+	    integerProgram:main(['-prg', Prog2, '-o', Prog2Int])
+	; Prog2 = Prog,
+	  Prog2Int = Prog2
+	),
 	format("Computing query-answer transformation ~n", []),
-	qa:main([ Prog, '-query', 'false', '-ans',  '-o', QAFile]),
+	qa:main([Prog2Int, '-query', 'false', '-ans',  '-o', F_QA]),
 	format("Computing widening thresholds for QA program~n", []),
-	thresholds1:main(['-prg', QAFile, '-o', F_Threshold]),
+	thresholds1:main(['-prg', F_QA, '-o', F_Threshold]),
 	format("Analyse QA program~n", []),
-	cpascc:main(['-prg', QAFile, '-withwut', 'bounded', '-wfunc', 'h79', '-widenpoints',F_WidenPoints,'-threshold', F_Threshold, '-o', QACPA]),
-	insertProps:main([ '-prg', Prog, '-props', QACPA,   '-o', OutputFile]).
+	cpascc:main(['-prg', F_QA, '-withwut', 'bounded', '-wfunc', 'h79', '-widenpoints',F_WidenPoints,'-threshold', F_Threshold, '-o', QACPA]),
+	% NOTE: Using Prog2, not Prog2Int!
+	( opt_array -> % TODO:{arrays} add more control over strengthening
+	    insertProps:main(['-array', '-prg', Prog2, '-props', QACPA, '-o', OutputFile])
+	; insertProps:main(['-prg', Prog2, '-props', QACPA, '-o', OutputFile])
+	).
 
 % ---------------------------------------------------------------------------
 % Analysis using CPA
 % ---------------------------------------------------------------------------
 
-verifyCPA(Prog, QAFile, QACPA, F_CPA, OutputFile, F_WidenPoints, F_Traceterm, F_Threshold,Result) :-
-	preProcessHorn(Prog, QAFile, QACPA, F_WidenPoints, F_Threshold, OutputFile),
+verifyCPA(Prog, F_Int, F_QA, QACPA, F_CPA, OutputFile, F_WidenPoints, F_Traceterm, F_Threshold,Result) :-
+	preProcessHorn(Prog, F_Int, F_QA, QACPA, F_WidenPoints, F_Threshold, OutputFile),
 	format("Checking for the presence of false clauses~n", []),
 	checkFalseInFile:checkForFalse(OutputFile, Result1),
-	( Result1=safe ->
+	( Result1=safe -> % no (false :- ...)
+	    % TODO:{arrays} "if there is no trace for false in A_P' then return safe" (is it equivalent?)
 	    Result=safe
-	;
+	; 
+	    ( opt_array ->
+	        % TODO:{arrays(4) - "abstract_analyse"}
+	        % for each clause in P, apply
+	        %     constraint generalisation algorithm (step 2-3) of [1] (Section 5.3, page 344)
+	        %   producing P2;
+	        format("Generalizing constraint arrays~n", []),
+		OutputFile2 = OutputFile,
+	        % TODO:{arrays(2): "integer_program"}
+	        %   compute integer program ProgInt (use it in qa,thresholds1,cpascc; but not in insertProps)
+	        format("Getting integer program~n", []),
+	        atom_concat(OutputFile2, '.int.pl', OutputFile2Int),
+	        integerProgram:main(['-prg', OutputFile2, '-o', OutputFile2Int])
+	    ; OutputFile2 = OutputFile,
+	      OutputFile2Int = OutputFile2
+	    ),
+	    %
 	    format("Computing widening thresholds for PE program~n", []),
-	    thresholds1:main(['-prg', OutputFile, '-o', F_Threshold]),
+	    thresholds1:main(['-prg', OutputFile2Int, '-o', F_Threshold]),
 	    format("Analyse PE program~n", []),
-	    cpascc:main(['-prg', OutputFile, '-withwut', 'bounded', '-wfunc', 'h79', '-widenpoints',F_WidenPoints, '-threshold', F_Threshold, '-cex', F_Traceterm, '-o', F_CPA]),
-	    format("Analysing  counterexample~n", []),
-	    counterExample:main([OutputFile, F_Traceterm, Result])
+	    cpascc:main(['-prg', OutputFile2Int, '-withwut', 'bounded', '-wfunc', 'h79', '-widenpoints',F_WidenPoints, '-threshold', F_Threshold, '-cex', F_Traceterm, '-o', F_CPA]),
+	    format("Analysing counterexample~n", []),
+	    ( opt_array ->
+	        % TODO:{arrays(5) - in counterExample.pl} "need extension to the theory of arrays"
+	        write(user_output, 'TODO: use arrays in cex'), nl(user_error),
+	        counterExample:main([OutputFile, F_Traceterm, Result])
+	    ; counterExample:main([OutputFile, F_Traceterm, Result])
+	    )
 	).
 
 % ---------------------------------------------------------------------------
@@ -155,7 +217,7 @@ determinise_jar(Path) :-
 refineHorn(F_SP, F_FTA, F_DFTA,  F_SPLIT, F_TRACETERM, F_REFINE, WithInterpolant):-
         format( "Generate FTA from program and error trace~n", []),
         genfta:main(['-prg', F_SP, '-trace', F_TRACETERM, '-o', F_FTA]),
-        ( WithInterpolant=int ->
+        ( WithInterpolant=yes ->
             format( "Computing interpolant automaton from an error trace~n", []),
             interpolantAutomaton:main(['-prg', F_SP,  '-trace',  F_TRACETERM, '-o',  F_FTA])
 	; true
@@ -182,9 +244,6 @@ printRahftOutput_(LogS, Prog, Safety, Iteration, Time):-
 	format(LogS, 'Iteration: ~w, ', [Iteration]),
 	format(LogS, 'Time: ~w millisecs.} ~n', [Time]).
 
-remove_resultdir(ResultDir) :-
-	( file_exists(ResultDir) -> remove_dir(ResultDir) ; true ).
-
 % ---------------------------------------------------------------------------
 % main procedure RAHFT
 % ---------------------------------------------------------------------------
@@ -193,15 +252,14 @@ applyRAHFT(Prog1, WithInterpolant, ShowModel, Bounded) :-
 	logfile(LogFile),
 	open(LogFile, append, LogS),
 	%creating temporary directory for intermediate files
-	mktempdir_in_tmp('rahft-XXXXXXXX', ResultDir),
-	%format("temp dir ~w~n", [ResultDir]),
+	prepare_resultdir(Prog1, ResultDir),
 	K = 0,
 	path_basename(Prog1, F),
-	createTmpFilePP(ResultDir, F, F_QA, QA_CPA, F_CPA, F_SP,F_WidenPoints, F_TRACETERM, F_THRESHOLD),
+	createTmpFilePP(ResultDir, F, F_Int, F_QA, QA_CPA, F_CPA, F_SP,F_WidenPoints, F_TRACETERM, F_THRESHOLD),
 	createTmpFileRef(ResultDir, F, F_FTA, F_DFTA, F_SPLIT, F_REFINE),
 	%
 	statistics(runtime,[START|_]),
-	abstract_refine(Bounded, LogS,  Prog1, K, Result, K1, WithInterpolant,  F_QA, QA_CPA, F_CPA, F_SP,F_WidenPoints, F_TRACETERM, F_THRESHOLD, F_FTA, F_DFTA, F_SPLIT, F_REFINE),
+	abstract_refine(Bounded, LogS,  Prog1, K, Result, K1, WithInterpolant, F_Int, F_QA, QA_CPA, F_CPA, F_SP,F_WidenPoints, F_TRACETERM, F_THRESHOLD, F_FTA, F_DFTA, F_SPLIT, F_REFINE),
 	statistics(runtime,[END|_]),
 	( ShowModel = no -> true
 	; ( Result=safe ->
@@ -215,15 +273,15 @@ applyRAHFT(Prog1, WithInterpolant, ShowModel, Bounded) :-
 	DIFF is END - START,
 	path_basename(Prog1, F),
 	printRahftOutput(LogS,F, Result, K1, DIFF),
-	%remove the directory of intermediate files
-	remove_resultdir(ResultDir),
+	%
+	end_resultdir(ResultDir),
 	close(LogS).
 
-abstract_refine(bounded(Itr), _,  _, K, unknown, Itr, _,  _, _, _, _,_, _, _, _, _, _, _):-
+abstract_refine(bounded(Itr), _, _, K, unknown, Itr, _, _, _, _, _, _,_, _, _, _, _, _, _):-
 	K > Itr, % Exceeded allowed number of iterations, stop
 	!.
-abstract_refine(Bounded, LogS,  Prog1, K, Result, K2, WithInterpolant,  F_QA, QA_CPA, F_CPA, F_SP,F_WidenPoints, F_TRACETERM, F_THRESHOLD, F_FTA, F_DFTA, F_SPLIT, F_REFINE) :-
-	verifyCPA(Prog1, F_QA, QA_CPA, F_CPA, F_SP, F_WidenPoints, F_TRACETERM, F_THRESHOLD, Ret1),
+abstract_refine(Bounded, LogS,  Prog1, K, Result, K2, WithInterpolant, F_Int, F_QA, QA_CPA, F_CPA, F_SP,F_WidenPoints, F_TRACETERM, F_THRESHOLD, F_FTA, F_DFTA, F_SPLIT, F_REFINE) :-
+	verifyCPA(Prog1, F_Int, F_QA, QA_CPA, F_CPA, F_SP, F_WidenPoints, F_TRACETERM, F_THRESHOLD, Ret1),
 	( Ret1 = safe ->
 	    Result = Ret1,
 	    K2 = K,
@@ -235,28 +293,45 @@ abstract_refine(Bounded, LogS,  Prog1, K, Result, K2, WithInterpolant,  F_QA, QA
 	; % refinement with FTA
 	  refineHorn(F_SP, F_FTA, F_DFTA,  F_SPLIT, F_TRACETERM, F_REFINE, WithInterpolant),
 	  K1 is K + 1,
-	  abstract_refine(Bounded, LogS,  F_REFINE, K1, Result, K2, WithInterpolant, F_QA, QA_CPA, F_CPA, F_SP,F_WidenPoints, F_TRACETERM, F_THRESHOLD, F_FTA, F_DFTA, F_SPLIT, F_REFINE)
+	  abstract_refine(Bounded, LogS,  F_REFINE, K1, Result, K2, WithInterpolant, F_Int, F_QA, QA_CPA, F_CPA, F_SP,F_WidenPoints, F_TRACETERM, F_THRESHOLD, F_FTA, F_DFTA, F_SPLIT, F_REFINE)
 	).
 
 hornSpecialise(Prog, OutputFile):-
-	atom_concat(Prog, '_output', ResultDir),
-	mkpath(ResultDir),
-	format( "temp dir ~w~n", [ResultDir]),
+	prepare_resultdir(Prog, ResultDir),
 	path_basename(Prog, F),
-	createTmpFilePP(ResultDir, F, F_QA, QA_CPA,_,_,F_WidenPoints, _, F_THRESHOLD),
+	createTmpFilePP(ResultDir, F, F_Int, F_QA, QA_CPA,_,_,F_WidenPoints, _, F_THRESHOLD),
 	statistics(runtime,[START|_]),
-	preProcessHorn(Prog, F_QA, QA_CPA, F_WidenPoints, F_THRESHOLD, OutputFile),
+	preProcessHorn(Prog, F_Int, F_QA, QA_CPA, F_WidenPoints, F_THRESHOLD, OutputFile),
 	statistics(runtime,[END|_]),
 	DIFF is END - START,
 	path_basename(Prog, F),
 	format( "Total time: ~w ms. ~n", [DIFF]),
-	%remove the directory of intermediate files
-	remove_resultdir(ResultDir).
+	end_resultdir(ResultDir).
 
-/*
-if F_CPA exists it shows the model from F_CPA, else from QA_CPA
-if F_REFINE exists then the model corresponds to this else to Prog
-*/
+% ---------------------------------------------------------------------------
+% (Temporary directory for intermediate passes)
+
+prepare_resultdir(Prog, ResultDir) :-
+	( opt_debug_temps ->
+	    atom_concat(Prog, '_output', ResultDir),
+	    mkpath(ResultDir)
+	; mktempdir_in_tmp('rahft-XXXXXXXX', ResultDir)
+	).
+
+end_resultdir(ResultDir) :-
+	( opt_debug_temps ->
+	    format("NOTE: Files for temporary results are kept at ~w~n", [ResultDir])
+	; % remove the directory of intermediate files
+	  ( file_exists(ResultDir) -> rmtempdir(ResultDir)
+	  ; true
+	  )
+	).
+
+% ---------------------------------------------------------------------------
+
+% if F_CPA exists it shows the model from F_CPA, else from QA_CPA
+% if F_REFINE exists then the model corresponds to this else to Prog
+
 showModel(QA_CPA, F_CPA,Prog, F_REFINE):-
 	write('Model: '), nl,
 	( file_exists(F_CPA) -> showInv(F_CPA) ; showInvQA(QA_CPA) ),
@@ -342,6 +417,10 @@ traceTerm_file(ResultDir, F_Traceterm) :-
 threshold_file(ResultDir, F_Threshold) :-
 	path_concat(ResultDir, 'wut.props', F_Threshold).
 
+int_file(ResultDir, F, F_Int) :-
+	atom_concat(F, '.int.pl', F_Int0),
+	path_concat(ResultDir, F_Int0, F_Int).
+
 qa_file(ResultDir, F, F_QA) :-
 	atom_concat(F, '.qa.pl', F_QA0),
 	path_concat(ResultDir, F_QA0, F_QA).
@@ -373,7 +452,8 @@ refine_file(ResultDir, F, F_REFINE) :-
 	atom_concat(F, '.refine.pl', F_REFINE0),
 	path_concat(ResultDir, F_REFINE0, F_REFINE).
 
-createTmpFilePP(ResultDir, F, F_QA, QA_CPA, F_CPA, F_SP, F_WidenPoints, F_Traceterm, F_Threshold):-
+createTmpFilePP(ResultDir, F, F_Int, F_QA, QA_CPA, F_CPA, F_SP, F_WidenPoints, F_Traceterm, F_Threshold):-
+	int_file(ResultDir, F, F_Int),
 	qa_file(ResultDir, F, F_QA),
 	qa_cpa_file(ResultDir,F, QA_CPA),
 	sp_file(ResultDir, F, F_SP),

@@ -9,7 +9,7 @@
 
 :- use_module(chclibs(setops)).
 :- use_module(chclibs(canonical)).
-:- use_module(chclibs(linearize)).
+%:- use_module(chclibs(linearize)). % TODO: unused
 :- use_module(chclibs(timer_ciao)).
 :- use_module(chclibs(program_loader)).
 :- use_module(chclibs(ppl_ops)).
@@ -20,10 +20,12 @@
 :- dynamic(fact/2).
 :- dynamic(prop/2).
 :- dynamic(pe_clause/2).
+:- data opt_array/0.
 
-recognised_option('-prg',  programO(R),[R]).
-recognised_option('-props',  propFile(R),[R]).
-recognised_option('-o',    outputFile(R),[R]).
+recognised_option('-prg',   programO(R),[R]).
+recognised_option('-props', propFile(R),[R]).
+recognised_option('-array', array,[]).
+recognised_option('-o',     outputFile(R),[R]).
 
 main(ArgV) :-
 	cleanup,
@@ -51,6 +53,11 @@ setOptions(ArgV,File,OutS) :-
 	),
 	( member(propFile(PFile),Options), readPropFile(PFile)
 	; true
+	),
+	!, % TODO: fix choicepoints above
+	( member(array,Options) ->
+	    assertz_fact(opt_array)
+	; true
 	).
 
 cleanup :-
@@ -70,7 +77,27 @@ operator:-
 	bodyAnswerConstraints(Bs,Cs3),
 	append(Cs2,Cs3,Cs4),
 	numbervars((Head,Cs4,Bs),0,_),
-	satisfiable(Cs4,H),
+	( opt_array ->
+	    % DONE:{arrays(3)}
+	    %   let H:- C_l, C_a, B be a clause with C_l being linear arithmetic
+	    %   constraint and C_a being array constraints. Say we need to strengthen
+	    %   it with lets say C. Then the resulting clause is simply H:- C, C_l,
+	    %   C_a, B. The clause is useless if C, C_l, C_a is
+	    %   unsatisfiable. Therefore satisfiability is checked in
+	    %   insertProps.pl. Here we can do several things:
+	    %   
+	    %   (1) leave as it is H:- C, C_l, C_a, B
+	    %   (2) check sat of C, C_l using linear solver; if unsat remove the clause
+	    %   (3) check sat of C, C_l, C_a using smt solvers.
+	    write(user_output, 'TODO: check sat of C,C_l,C_a'),
+	    separate_array_constraints(Cs4, Cs4a, Cs4r),
+	    display(satisfiable(Cs4,H)), nl,
+	    display(array(Cs4a,Cs4r)), nl,
+	    % TODO:{arrays} implement option 2 (use yices for array constraints)
+	    satisfiable(Cs4r,H),
+	    display(was_satisfiable), nl
+	; satisfiable(Cs4,H)
+	),
 	getConstraint(H,Cs5),
 	append(Cs5,Bs,B1),
 	assertz(pe_clause(Head,B1)),
@@ -98,21 +125,23 @@ appendConstraints([],_,Cs,Cs).
 appendConstraints([prop(Head,Cs1)|Props],Head,Cs,Cs3) :-
 	appendConstraints(Props,Head,Cs,Cs2),
 	append(Cs1,Cs2,Cs3).
+
+% TODO: unused
+%%unsat(Cs) :-
+%%	linearize(Cs,Cs1),
+%%	numbervars(Cs1,0,_),
+%%	\+ satisfiable(Cs1,_).
 	
-unsat(Cs) :-
-	linearize(Cs,Cs1),
-	numbervars(Cs1,0,_),
-	\+ satisfiable(Cs1,_).
-	
-solve(Xs,Cs,Hp) :-
-	linearize(Cs,Cs1),
-	varset((Xs,Cs1),Ys),
-	dummyCList(Ys,DCL),
-	append(Cs1,DCL,CsL),
-	numbervars((Xs:-CsL),0,_),
-	satisfiable(CsL,H1),
-	setdiff(Ys,Xs,Zs),
-	project(H1,Zs,Hp).
+% TODO: unused
+%%solve(Xs,Cs,Hp) :-
+%%	linearize(Cs,Cs1),
+%%	varset((Xs,Cs1),Ys),
+%%	dummyCList(Ys,DCL),
+%%	append(Cs1,DCL,CsL),
+%%	numbervars((Xs:-CsL),0,_),
+%%	satisfiable(CsL,H1),
+%%	setdiff(Ys,Xs,Zs),
+%%	project(H1,Zs,Hp).
 
 	   
 record(Head,H):-
