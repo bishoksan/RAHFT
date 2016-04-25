@@ -23,6 +23,9 @@ manipulating finite tree automata.
 3. [CHCLibs](http://github.com/bishoksan/chclibs)
    (`ciao get github.com/bishoksan/chclibs`)
 
+**NOTE**: Due to a requirement in Yices, Ciao must be compiled in 64-bits
+mode (which is the default)
+
 ## Build and installation
 
 You can automatically fetch, build, and install RAHFT using:
