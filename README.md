@@ -16,7 +16,7 @@ manipulating finite tree automata.
 ## Requirements
 1. [Ciao](http://github.com/ciao-lang/ciao) with
    [Parma Polyhedra Library](http://bugseng.com/products/ppl/) support
-   (installed with `./ciao-boot.sh local-install
+   (installed from git repository with `./ciao-boot.sh local-install
    --contrib:with_ppl=yes --contrib:auto_install_ppl=yes`)
 2. Ciao bindings for [Yices SMT solver](http://yices.csl.sri.com/)
    (`ciao get github.com/jfmc/ciao_yices`)
