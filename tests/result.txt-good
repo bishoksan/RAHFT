@@ -1,11 +1,11 @@
-RAHFT: {Program: addition.nts.pl, Safety: safe, Iteration: 0, Time: 129.487 millisecs.} 
-RAHFT: {Program: bfprt.nts.pl, Safety: safe, Iteration: 0, Time: 162.326 millisecs.} 
-RAHFT: {Program: binarysearch.nts.pl, Safety: safe, Iteration: 0, Time: 173.193 millisecs.} 
-RAHFT: {Program: countZero.nts.pl, Safety: safe, Iteration: 0, Time: 133.069 millisecs.} 
-RAHFT: {Program: fib.pl, Safety: safe, Iteration: 0, Time: 43.54900000000001 millisecs.} 
-RAHFT: {Program: identity.nts.pl, Safety: safe, Iteration: 0, Time: 124.979 millisecs.} 
-RAHFT: {Program: merge.nts.pl, Safety: safe, Iteration: 0, Time: 281.684 millisecs.} 
-RAHFT: {Program: palindrome.nts.pl, Safety: safe, Iteration: 0, Time: 119.0 millisecs.} 
-RAHFT: {Program: parity.nts.pl, Safety: unsafe, Iteration: 1, Time: 700.162 millisecs.} 
-RAHFT: {Program: remainder.nts.pl, Safety: unsafe, Iteration: 0, Time: 168.561 millisecs.} 
-RAHFT: {Program: running.nts.pl, Safety: unsafe, Iteration: 1, Time: 829.866 millisecs.}
+[solver(rahft), program('addition.nts.pl'), safety(safe), iteration(0), option('-noint'), time(93.76399999999998, ms)]. 
+[solver(rahft), program('bfprt.nts.pl'), safety(safe), iteration(0), option('-noint'), time(115.534, ms)]. 
+[solver(rahft), program('binarysearch.nts.pl'), safety(safe), iteration(0), option('-noint'), time(129.228, ms)]. 
+[solver(rahft), program('countZero.nts.pl'), safety(safe), iteration(0), option('-noint'), time(100.13, ms)]. 
+[solver(rahft), program('fib.pl'), safety(safe), iteration(0), option('-noint'), time(37.07399999999998, ms)]. 
+[solver(rahft), program('identity.nts.pl'), safety(safe), iteration(0), option('-noint'), time(93.838, ms)]. 
+[solver(rahft), program('merge.nts.pl'), safety(safe), iteration(0), option('-noint'), time(220.027, ms)]. 
+[solver(rahft), program('palindrome.nts.pl'), safety(safe), iteration(0), option('-noint'), time(88.26999999999998, ms)]. 
+[solver(rahft), program('parity.nts.pl'), safety(unsafe), iteration(1), option('-noint'), time(470.1660000000001, ms)]. 
+[solver(rahft), program('remainder.nts.pl'), safety(unsafe), iteration(0), option('-noint'), time(136.527, ms)]. 
+[solver(rahft), program('running.nts.pl'), safety(unsafe), iteration(1), option('-noint'), time(600.724, ms)]. 
