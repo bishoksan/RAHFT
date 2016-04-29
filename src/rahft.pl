@@ -19,7 +19,7 @@
 :- use_module(chclibs(qa), [main/1]).
 :- use_module(chclibs(common)).
 
-:- use_module(counterExample, [main/1]).
+:- use_module(counterExample, [counterExample/2]).
 :- use_module(insertProps, [main/1]).
 :- use_module(genfta, [main/1]).
 :- use_module(splitClauseIds, [main/1]).
@@ -36,6 +36,7 @@
 :- use_module(library(process)). % invoking external processes
 
 :- include(chclibs(get_options)).
+:- include(chclibs(messages)).
 
 % stores output of the tool
 logfile('result.txt').
@@ -48,6 +49,7 @@ logfile('result.txt').
 % Main
 % ---------------------------------------------------------------------------
 
+:- data flag/1. % TODO: use for other options
 :- data opt_array/0.
 :- data opt_debug_temps/0.
 
@@ -61,6 +63,7 @@ help_msg(
 
 Options:
  -help    display this help menu
+ -v       verbose
  -int     uses interpolant automaton for trace generalisation during refinement
  -model   show model
  -array   enable array constraints
@@ -72,6 +75,7 @@ Options:
 
 recognised_option('-help',  help, []).
 recognised_option('-model', model, []).
+recognised_option('-v', verbose, []).
 recognised_option('-int',   int, []).
 recognised_option('-array', array, []).
 recognised_option('-sp',    horn_specialise(F), [F]).
@@ -118,6 +122,11 @@ main_(Options, Prog) :-
 	    assertz_fact(opt_debug_temps)
 	; true
 	),
+	retractall_fact(flag(verbose)),
+	( member(verbose, Options) ->
+	    assertz_fact(flag(verbose))
+	; true
+	),
 	applyRAHFT(Prog, WithInterpolant, ShowModel, Bounded).
 
 % ---------------------------------------------------------------------------
@@ -125,27 +134,28 @@ main_(Options, Prog) :-
 % ---------------------------------------------------------------------------
 
 preProcessHorn(Prog, F_Int, F_QA, QACPA, F_WidenPoints, F_Threshold, OutputFile):-
+	verbose_opts(VerbOpts),
 	( opt_array ->
 	    % TODO:{arrays(1): "preprocess"}
 	    %   for each clause in P, apply 
 	    %    - constraint replacement algorithm of [1] (Section 5.2, page 338 RR1-WR3);
 	    %     step 1 of [1] (Section 5.3, page 344) // Note: This is “delete all write constraints”
 	    %   producing P2;
-	    format("Preprocessing array constraints~n", []),
+	    verbose_message(['Preprocessing array constraints']),
 	    Prog2 = Prog,
 	    % TODO:{arrays(2): "integer_program"}
-	    format("Getting integer program~n", []),
+	    verbose_message(['Getting integer program']),
 	    Prog2Int = F_Int,
 	    integerProgram:main(['-prg', Prog2, '-o', Prog2Int])
 	; Prog2 = Prog,
 	  Prog2Int = Prog2
 	),
-	format("Computing query-answer transformation ~n", []),
+	verbose_message(['Computing query-answer transformation']),
 	qa:main([Prog2Int, '-query', 'false', '-ans',  '-o', F_QA]),
-	format("Computing widening thresholds for QA program~n", []),
+	verbose_message(['Computing widening thresholds for QA program']),
 	thresholds1:main(['-prg', F_QA, '-o', F_Threshold]),
-	format("Analyse QA program~n", []),
-	cpascc:main(['-prg', F_QA, '-withwut', 'bounded', '-wfunc', 'h79', '-widenpoints',F_WidenPoints,'-threshold', F_Threshold, '-o', QACPA]),
+	verbose_message(['Analyse QA program']),
+	cpascc:main(['-prg', F_QA, '-withwut', 'bounded', '-wfunc', 'h79', '-widenpoints',F_WidenPoints,'-threshold', F_Threshold, '-o', QACPA|VerbOpts]),
 	% NOTE: Using Prog2, not Prog2Int!
 	( opt_array -> % TODO:{arrays} add more control over strengthening
 	    insertProps:main(['-array', '-prg', Prog2, '-props', QACPA, '-o', OutputFile])
@@ -157,8 +167,9 @@ preProcessHorn(Prog, F_Int, F_QA, QACPA, F_WidenPoints, F_Threshold, OutputFile)
 % ---------------------------------------------------------------------------
 
 verifyCPA(Prog, F_Int, F_QA, QACPA, F_CPA, OutputFile, F_WidenPoints, F_Traceterm, F_Threshold,Result) :-
+	verbose_opts(VerbOpts),
 	preProcessHorn(Prog, F_Int, F_QA, QACPA, F_WidenPoints, F_Threshold, OutputFile),
-	format("Checking for the presence of false clauses~n", []),
+	verbose_message(['Checking for the presence of false clauses']),
 	checkFalseInFile:checkForFalse(OutputFile, Result1),
 	( Result1=safe -> % no (false :- ...)
 	    % TODO:{arrays} "if there is no trace for false in A_P' then return safe" (is it equivalent?)
@@ -169,27 +180,27 @@ verifyCPA(Prog, F_Int, F_QA, QACPA, F_CPA, OutputFile, F_WidenPoints, F_Traceter
 	        % for each clause in P, apply
 	        %     constraint generalisation algorithm (step 2-3) of [1] (Section 5.3, page 344)
 	        %   producing P2;
-	        format("Generalizing constraint arrays~n", []),
+	        verbose_message(['Generalizing constraint arrays']),
 		OutputFile2 = OutputFile,
 	        % TODO:{arrays(2): "integer_program"}
 	        %   compute integer program ProgInt (use it in qa,thresholds1,cpascc; but not in insertProps)
-	        format("Getting integer program~n", []),
+	        verbose_message(['Getting integer program']),
 	        atom_concat(OutputFile2, '.int.pl', OutputFile2Int),
 	        integerProgram:main(['-prg', OutputFile2, '-o', OutputFile2Int])
 	    ; OutputFile2 = OutputFile,
 	      OutputFile2Int = OutputFile2
 	    ),
 	    %
-	    format("Computing widening thresholds for PE program~n", []),
+	    verbose_message(['Computing widening thresholds for PE program']),
 	    thresholds1:main(['-prg', OutputFile2Int, '-o', F_Threshold]),
-	    format("Analyse PE program~n", []),
+	    verbose_message(['Analyse PE program']),
 	    cpascc:main(['-prg', OutputFile2Int, '-withwut', 'bounded', '-wfunc', 'h79', '-widenpoints',F_WidenPoints, '-threshold', F_Threshold, '-cex', F_Traceterm, '-o', F_CPA]),
-	    format("Analysing counterexample~n", []),
+	    verbose_message(['Analysing counterexample']),
 	    ( opt_array ->
 	        % TODO:{arrays(5) - in counterExample.pl} "need extension to the theory of arrays"
-	        write(user_output, 'TODO: use arrays in cex'), nl(user_error),
-	        counterExample:main([OutputFile, F_Traceterm, Result])
-	    ; counterExample:main([OutputFile, F_Traceterm, Result])
+	        write(user_error, 'TODO: use arrays in cex'), nl(user_error),
+	        counterExample:counterExample([OutputFile, F_Traceterm|VerbOpts], Result)
+	    ; counterExample:counterExample([OutputFile, F_Traceterm|VerbOpts], Result)
 	    )
 	).
 
@@ -215,18 +226,25 @@ determinise_jar(Path) :-
 % ---------------------------------------------------------------------------
 
 refineHorn(F_SP, F_FTA, F_DFTA,  F_SPLIT, F_TRACETERM, F_REFINE, WithInterpolant):-
-        format( "Generate FTA from program and error trace~n", []),
+	verbose_opts(VerbOpts),
+        verbose_message(['Generate FTA from program and error trace']),
         genfta:main(['-prg', F_SP, '-trace', F_TRACETERM, '-o', F_FTA]),
         ( WithInterpolant=yes ->
-            format( "Computing interpolant automaton from an error trace~n", []),
-            interpolantAutomaton:main(['-prg', F_SP,  '-trace',  F_TRACETERM, '-o',  F_FTA])
+            verbose_message(['Computing interpolant automaton from an error trace']),
+            interpolantAutomaton:main(['-prg', F_SP,  '-trace',  F_TRACETERM, '-o',  F_FTA|VerbOpts])
 	; true
         ),
+	%
 	determinise_jar(DeterminiseJar),
-	process_call(path(java), ['-jar', DeterminiseJar, F_FTA, '-nodc', '-show', '-o', F_DFTA], []),
-        format( "Find disjoint clauses ~n", []),
+	( flag(verbose) ->
+	    DeterminiseOpts = []
+	; DeterminiseOpts = [stdout(null)]
+	),
+	process_call(path(java), ['-jar', DeterminiseJar, F_FTA, '-nodc', '-show', '-o', F_DFTA], DeterminiseOpts),
+	%
+        verbose_message(['Find disjoint clauses']),
         splitClauseIds:main(['-prg', F_SP, '-o', F_SPLIT]),
-        format( "Refining using DFTA ~n", []),
+        verbose_message(['Refining using DFTA']),
         ftaRefine:main(['-prg', F_SP, '-fta', F_DFTA, '-split', F_SPLIT, F_SPLIT, '-o', F_REFINE]).
 
 % ---------------------------------------------------------------------------
@@ -293,11 +311,11 @@ abstract_refine(Bounded, LogS,  Prog1, K, Result, K2, WithInterpolant, F_Int, F_
 	( Ret1 = safe ->
 	    Result = Ret1,
 	    K2 = K,
-	    format("the program is safe~n", [])
+	    verbose_message(['the program is safe'])
 	; Ret1 = unsafe ->
 	    Result= Ret1,
 	    K2 = K,
-	    format("the program is unsafe~n", [])
+	    verbose_message(['the program is unsafe'])
 	; % refinement with FTA
 	  refineHorn(F_SP, F_FTA, F_DFTA,  F_SPLIT, F_TRACETERM, F_REFINE, WithInterpolant),
 	  K1 is K + 1,
@@ -313,7 +331,7 @@ hornSpecialise(Prog, OutputFile):-
 	statistics(runtime,[END|_]),
 	DIFF is END - START,
 	path_basename(Prog, F),
-	format( "Total time: ~w ms. ~n", [DIFF]),
+	verbose_message(['Total time: ', DIFF, ' ms.']),
 	end_resultdir(ResultDir).
 
 % ---------------------------------------------------------------------------

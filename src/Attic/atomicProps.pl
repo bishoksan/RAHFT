@@ -16,6 +16,7 @@
 
 :- include(chclibs(get_options)).
 
+:- data flag/1. % TODO: use
 :- dynamic(fact/2).
 
 go(F,OutPFile) :-

@@ -15,6 +15,7 @@
 
 :- include(chclibs(get_options)).
 
+:- data flag/1.
 :- dynamic transition/2.
 
 recognised_option('-prg',   program(R),[R]).
@@ -45,16 +46,20 @@ makeTraceFTAs([_|Ts],K0,K1,OutS) :-
 makeTraceFTAs([],K,K,_).
 	
 setOptions(Options,File, TraceFile, OutS) :-
-	(member(program(File),Options); 
-			write(user_output,'No input file given.'),
-			nl(user_output), 
-			fail),
-    (member(traceFile(TraceFile),Options);
-			write(user_output,'No trace file given.'),
-			nl(user_output), 
-			fail),
-	(member(outputFile(OutFile),Options), open(OutFile,write,OutS); 
-			OutS=user_output).
+	( member(program(File),Options) ->
+	    true
+	; write('No input file given.'), nl,
+	  fail
+	),
+	( member(traceFile(TraceFile),Options) ->
+	    true
+	; write('No trace file given.'), nl,
+	  fail
+	),
+	( member(outputFile(OutFile),Options) ->
+	    open(OutFile,write,OutS)
+	; OutS=user_output
+	).
 			
 cleanup :-
 	retractall(my_clause(_,_,_)),

@@ -1,4 +1,4 @@
-:- module(counterExample, [checkCounterExample/3, main/1], []).
+:- module(counterExample, [checkCounterExample/3, counterExample/2], []).
 
 :- use_module(library(read)).
 :- use_module(library(write)).
@@ -9,9 +9,23 @@
 :- use_module(chclibs(program_loader)).
 :- use_module(chclibs(common)).
 
+:- include(chclibs(get_options)).
+:- include(chclibs(messages)).
+
+:- data flag/1.
+recognised_option('-v', verbose, []).
+
 % NOTE: TraceF is the outcome of cpascc.pl with -cex option
 
-main([F, TraceF, Result]) :-
+counterExample(ArgV, Result) :-
+	get_options(ArgV,Options,Args0),
+	retractall_fact(flag(verbose)),
+	( member(verbose, Options) ->
+	    assertz_fact(flag(verbose))
+	; true
+	),
+	%
+	Args0 = [F, TraceF],
 	unsafe(F, TraceF, Result).
 	
 unsafe(F,PFile, Result) :-
@@ -38,7 +52,7 @@ checkCounterExample(no, _, Result) :-
 	!,
 	Result=safe.
 checkCounterExample(Cex, F, Result) :-
-	write(user_output,'Counter example: '),	write(user_output,Cex),	nl(user_output),
+	verbose_message(['Counter example: ', Cex]),
 	%
 	load_file(F),
 	start_ppl,

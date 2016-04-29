@@ -16,12 +16,15 @@
 :- use_module(chclibs(common)).
 
 :- include(chclibs(get_options)).
+:- include(chclibs(messages)).
 
 :- dynamic(fact/2).
 :- dynamic(prop/2).
 :- dynamic(pe_clause/2).
 :- data opt_array/0.
+:- data flag/1. % TODO: use
 
+recognised_option('-v', verbose, []).
 recognised_option('-prg',   programO(R),[R]).
 recognised_option('-props', propFile(R),[R]).
 recognised_option('-array', array,[]).
@@ -29,9 +32,9 @@ recognised_option('-o',     outputFile(R),[R]).
 
 main(ArgV) :-
 	cleanup,
-	write(user_output,'Starting ...'),
-	nl(user_output),
-	setOptions(ArgV,File,OutS),
+	get_options(ArgV,Options,_),
+	setOptions(Options,File,OutS),
+	verbose_message(['Starting insertProps...']),
 	load_file(File),
 	%start_time,
 	start_ppl,
@@ -43,18 +46,23 @@ main(ArgV) :-
 	ppl_finalize.
 
 	
-setOptions(ArgV,File,OutS) :-
-	get_options(ArgV,Options,_),
+setOptions(Options,File,OutS) :-
 	( member(programO(File),Options) -> true
 	; write(user_output,'No input file given.'),nl(user_output),fail
 	),
-	( member(outputFile(OutFile),Options), open(OutFile,write,OutS)
+	( member(outputFile(OutFile),Options) ->
+	    open(OutFile,write,OutS)
 	; OutS=user_output
 	),
-	( member(propFile(PFile),Options), readPropFile(PFile)
+	( member(propFile(PFile),Options) ->
+	    readPropFile(PFile)
 	; true
 	),
-	!, % TODO: fix choicepoints above
+	retractall_fact(flag(verbose)),
+	( member(verbose, Options) ->
+	    assertz_fact(flag(verbose))
+	; true
+	),
 	( member(array,Options) ->
 	    assertz_fact(opt_array)
 	; true

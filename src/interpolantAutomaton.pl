@@ -46,7 +46,11 @@
 :- use_module(ciao_yices(ciao_yices_2)).
 
 :- include(chclibs(get_options)).
+:- include(chclibs(messages)).
 
+:- data flag/1. % TODO: use
+
+recognised_option('-v', verbose, []).
 recognised_option('-prg',  programO(R),[R]).
 recognised_option('-trace', traces(R),[R]).
 recognised_option('-o',generateAut(R),[R]).
@@ -69,21 +73,34 @@ go2(F, T):-
 %error trace starts with the predicate false
 %ArgV = ['-prg', Input, '-trace', TraceFile, -o, IntAutomata]
 main(ArgV):-
-    cleanup,
-    setOptions(ArgV,Input,[ErrorTrace|_], OutS), %just considering the first error trace
-    computeInterpolantAutomaton(Input,false,ErrorTrace),
-    write('The interpolant automaton is : '), nl,
-    printFTA(ErrorTrace, OutS),
-    close(OutS).
-
-setOptions(ArgV,Input,Traces, OutS) :-
+	cleanup,
 	get_options(ArgV,Options,_),
-	(member(programO(Input),Options);
-			write(user_output,'No input file given.'),nl(user_output)),
-    (member(traces(PFile),Options), readErrorTrace(PFile, Traces);
-                write(user_output,'No error trace file given.'),nl(user_output)),
-    (member(generateAut(OutFile),Options), open(OutFile,append,OutS);
-			OutS=user_output).
+	setOptions(Options,Input,[ErrorTrace|_], OutS), %just considering the first error trace
+	computeInterpolantAutomaton(Input,false,ErrorTrace),
+	% debug_message(['The interpolant automaton is: '),
+	printFTA(ErrorTrace, OutS),
+	close(OutS).
+
+setOptions(Options,Input,Traces, OutS) :-
+	retractall_fact(flag(verbose)),
+	( member(verbose, Options) ->
+	    assertz_fact(flag(verbose))
+	; true
+	),
+	( member(programO(Input),Options) ->
+	    true
+	; write('No input file given.'), nl,
+	  fail
+	),
+	( member(traces(PFile),Options) ->
+	    readErrorTrace(PFile, Traces)
+	; write('No error trace file given.'), nl,
+	  fail
+	),
+	( member(generateAut(OutFile),Options) ->
+	    open(OutFile,append,OutS)
+	; OutS=user_output
+	).
 
 %assume there is only one trace in the error trace file
 readErrorTrace(PFile, Traces):-

@@ -10,9 +10,11 @@
 
 :- include(chclibs(get_options)).
 
+:- data flag/1. % TODO: use
 :- dynamic new_clause/2.
 
-% Remove read/3 and write/4 constraints
+% Remove read/3 and write/4 constraints (for the array theory) from
+% the program.
 
 % Command line usage:
 %   integerProgram -prg in.pl -o out.pl

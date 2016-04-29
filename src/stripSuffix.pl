@@ -10,6 +10,7 @@
 
 :- include(chclibs(get_options)).
 
+:- data flag/1. % TODO: use
 :- dynamic(prop/2).
 :- dynamic(atomicprops/0).
 

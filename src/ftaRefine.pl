@@ -35,19 +35,25 @@ main(ArgV) :-
 	writeClauses(OutS),
 	close(OutS).
 
+:- data flag/1.
+
 setOptions(Options,File,FTA,OutS) :-
-	(member(program(File),Options); 
-			write(user_output,'No input file given.'),
-			nl(user_output), 
-			fail),
-	(member(ftaFile(FTA),Options); 
-			write(user_output,'No FTA file given.'),
-			nl(user_output), 
-			fail),
-	(member(splitFile(Split),Options), assertz(split(Split)); 
-			assertz(split('$NOSPLIT'))),
-	(member(outputFile(OutFile),Options), open(OutFile,write,OutS); 
-			OutS=user_output).
+	( member(program(File),Options) -> true
+	; write('No input file given.'), nl,
+	  fail
+	),
+	( member(ftaFile(FTA),Options) -> true 
+	; write('No FTA file given.'), nl,
+	  fail
+	),
+	( member(splitFile(Split),Options) ->
+	    assertz(split(Split))
+	; assertz(split('$NOSPLIT'))
+	),
+	( member(outputFile(OutFile),Options) ->
+	    open(OutFile,write,OutS)
+	; OutS=user_output
+	).
 			
 cleanup :-
 	retractall(my_clause(_,_,_)),

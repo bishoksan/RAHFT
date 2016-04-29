@@ -3,6 +3,7 @@
 :- use_module(library(write)).
 :- use_module(library(read)).
 
+% There is not clause with 'false' nor 'false_ans' head (due to qa transformation) 
 safe(PFile) :-
 	open(PFile,read,S),
 	read(S,C),
