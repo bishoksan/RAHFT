@@ -1,9 +1,9 @@
 %check -model option, it is printing result of each iterations
 :- module(rahft, [main/1], []).
 
-% Solves a non-linear Horn clause using a linear solver.
+% Solves a non-linear Horn clause .
 % Input: a set of Horn clauses
-% Output: safe if the program is solved else unknown if it is not solved
+% Output: safe/unsafe
 
 :- use_module(library(format), [format/2, format/3]).
 :- use_module(library(system_extra), [mkpath/1,mktempdir_in_tmp/2, rmtempdir/1]).
@@ -233,16 +233,24 @@ refineHorn(F_SP, F_FTA, F_DFTA,  F_SPLIT, F_TRACETERM, F_REFINE, WithInterpolant
 % printing output of RAHFT
 % ---------------------------------------------------------------------------
 
-printRahftOutput(LogS, Prog, Safety, Iteration, Time):-
-	printRahftOutput_(LogS, Prog, Safety, Iteration, Time),
-	printRahftOutput_(user_output, Prog, Safety, Iteration, Time).
+printRahftOutput(LogS, Prog, Safety, Iteration, InterpolantOption, Time):-
+	printRahftOutput_(LogS, Prog, Safety, Iteration, InterpolantOption, Time),
+	printRahftOutput_(user_output, Prog, Safety, Iteration, InterpolantOption, Time).
 
-printRahftOutput_(LogS, Prog, Safety, Iteration, Time):-
-	format(LogS, 'RAHFT: {', []),
-	format(LogS, 'Program: ~w, ', [Prog]),
-	format(LogS, 'Safety: ~w, ', [Safety]),
-	format(LogS, 'Iteration: ~w, ', [Iteration]),
-	format(LogS, 'Time: ~w millisecs.} ~n', [Time]).
+
+%[solver(rahft), program('addition.nts.pl'), safety(safe), iteration(0), time(129.487,ms), opt('-int')].
+printRahftOutput_(LogS, Prog, Safety, Iteration, InterpolantOption, Time):-
+	format(LogS, '[solver(rahft), ', []),
+	format(LogS, 'program(~q), ', [Prog]),
+	format(LogS, 'safety(~w), ', [Safety]),
+	format(LogS, 'iteration(~w), ', [Iteration]),
+
+    (InterpolantOption=yes ->
+        I = '-int'
+    ; I = '-noint'),
+
+    format(LogS, 'option(~q), ', [I]),
+	format(LogS, 'time(~w, ms)]. ~n', [Time]).
 
 % ---------------------------------------------------------------------------
 % main procedure RAHFT
@@ -272,7 +280,7 @@ applyRAHFT(Prog1, WithInterpolant, ShowModel, Bounded) :-
 	),
 	DIFF is END - START,
 	path_basename(Prog1, F),
-	printRahftOutput(LogS,F, Result, K1, DIFF),
+	printRahftOutput(LogS,F, Result, K1, WithInterpolant, DIFF),
 	%
 	end_resultdir(ResultDir),
 	close(LogS).
