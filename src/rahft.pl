@@ -1,8 +1,12 @@
 :- module(rahft, [main/1], []).
 
-% Solves a non-linear Horn clause.
-% Input: a set of Horn clauses
+/*
+
+% Input: a set of Horn clauses or program P
 % Output: safe/unsafe
+
+Given P it checks whether P has a model. If P has a model it return "safe"; if P has no model it returns "unsafe". It uses abstraction refinement algorithm for checking the existence of a model. For details: http://akira.ruc.dk/~kafle/publications/comlan-15
+*/
 
 :- use_module(library(format), [format/2, format/3]).
 :- use_module(library(system_extra), [mkpath/1,mktempdir_in_tmp/2, rmtempdir/1]).
