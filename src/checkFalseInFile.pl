@@ -2,7 +2,7 @@
 
 :- use_module(chclibs(program_loader)).
 
-% Check the presence of false int the clauses, if not present returns
+% Check the presence of false in the clauses, if not present returns
 % "safe" otherwise "unknown".
 checkForFalse(F, Result):-
 	load_file(F),
