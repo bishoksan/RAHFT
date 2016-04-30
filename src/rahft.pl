@@ -1,7 +1,6 @@
-%check -model option, it is printing result of each iterations
 :- module(rahft, [main/1], []).
 
-% Solves a non-linear Horn clause .
+% Solves a non-linear Horn clause.
 % Input: a set of Horn clauses
 % Output: safe/unsafe
 
@@ -19,6 +18,7 @@
 :- use_module(chclibs(qa), [main/1]).
 :- use_module(chclibs(common)).
 
+:- use_module(raf, [main/1]).
 :- use_module(counterExample, [counterExample/2]).
 :- use_module(insertProps, [main/1]).
 :- use_module(splitVersions, [main/1]).
@@ -64,6 +64,7 @@ help_msg(
 Options:
  -help        display this help menu
  -v           verbose
+ -raf         enable redundant argument filtering
  -splitvers   enable splitting of disjoint clauses
  -int         uses interpolant automaton for trace generalisation during refinement
  -model       show model
@@ -77,6 +78,7 @@ Options:
 recognised_option('-help',  help, []).
 recognised_option('-model', model, []).
 recognised_option('-v', verbose, []).
+recognised_option('-raf', raf, []).
 recognised_option('-splitvers', splitvers, []).
 recognised_option('-int',   int, []).
 recognised_option('-array', array, []).
@@ -113,6 +115,10 @@ main_(Options, Prog) :-
 	),
 	( member(array, Options) ->
 	    assertz_fact(flag(array))
+	; true
+	),
+	( member(raf, Options) ->
+	    assertz_fact(flag(raf))
 	; true
 	),
 	( member(splitvers, Options) ->
@@ -301,11 +307,19 @@ applyRAHFT(Prog1, WithInterpolant, ShowModel, Bounded) :-
 	createTmpFileRef(ResultDir, F, F_FTA, F_DFTA, F_SPLIT, F_REFINE),
 	%
 	statistics(runtime,[START|_]),
-	abstract_refine(Bounded, LogS,  Prog1, K, Result, K1, WithInterpolant, F_Int, F_QA, QA_CPA, F_CPA, F_SP,F_WidenPoints, F_TRACETERM, F_THRESHOLD, F_FTA, F_DFTA, F_SPLIT, F_REFINE),
+	( flag(raf) ->
+	    verbose_message(['Redundant argument filtering']),
+	    % (it may increase precision or even solvability of some problems)
+	    raf_file(ResultDir, F, F_Raf),
+	    raf:main([Prog1, false, F_Raf]),
+	    Prog2 = F_Raf
+	; Prog2 = Prog1
+	),
+	abstract_refine(Bounded, LogS,  Prog2, K, Result, K1, WithInterpolant, F_Int, F_QA, QA_CPA, F_CPA, F_SP,F_WidenPoints, F_TRACETERM, F_THRESHOLD, F_FTA, F_DFTA, F_SPLIT, F_REFINE),
 	statistics(runtime,[END|_]),
 	( ShowModel = no -> true
 	; ( Result=safe ->
-              showModel(QA_CPA, F_CPA, Prog1, F_REFINE)
+              showModel(QA_CPA, F_CPA, Prog2, F_REFINE)
 	  ; ( Result=unsafe ->
 	        write('There is no model since the program is unsafe'), nl
             ; write('We do not know if there exists a model for the program'), nl
@@ -339,6 +353,7 @@ abstract_refine(Bounded, LogS,  Prog1, K, Result, K2, WithInterpolant, F_Int, F_
 	).
 
 hornSpecialise(Prog, OutputFile):-
+	% TODO: Not using '-raf' option, fix
 	prepare_resultdir(Prog, ResultDir),
 	path_basename(Prog, F),
 	createTmpFilePP(ResultDir, F, F_Int, F_QA, QA_CPA,_,_,F_WidenPoints, _, F_THRESHOLD),
@@ -449,6 +464,10 @@ removeSuffixChars(FName,F1Name) :-
 	!.
 removeSuffixChars(FName,FName).
 
+
+raf_file(ResultDir, F, F_Raf) :-
+	atom_concat(F, '.raf.pl', F_Raf0),
+	path_concat(ResultDir, F_Raf0, F_Raf).
 
 wideningPoints_file(ResultDir, F_WidenPoints) :-
 	path_concat(ResultDir, 'widenpoints', F_WidenPoints).
