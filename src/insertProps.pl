@@ -1,5 +1,14 @@
 :- module(insertProps, [main/1], []).
 
+/*
+Input: a program P, a file F containing an interpretation of P
+Output: a program P1
+
+For each  clause H :- C, B1, ..., Bn in P,
+it produces a new clause H :- C0,C, C1,..., Cn, B1, ..., Bn where C0, Ci are interpreation of the predicates H and Bi. For further details: Section 4.3 of http://akira.ruc.dk/~kafle/publications/pepm-15
+
+*/
+
 :- use_module(library(write)).
 :- use_module(library(read)).
 :- use_module(library(dynamic)).
