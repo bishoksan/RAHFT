@@ -15,6 +15,11 @@
 :- data flag/1.
 recognised_option('-v', verbose, []).
 
+/*
+Given a file containing possibly an abstract trace (abstract counterexample) and program P, it checks
+whether the counterexample is feasible or not with respect to P. It returns "safe" is the file containts no abstract trace; "unsafe" if the counterexample is feasible or "unknown" otherwise.
+*/
+
 % NOTE: TraceF is the outcome of cpascc.pl with -cex option
 
 counterExample(ArgV, Result) :-
