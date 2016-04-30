@@ -21,6 +21,7 @@
 
 :- use_module(counterExample, [counterExample/2]).
 :- use_module(insertProps, [main/1]).
+:- use_module(splitVersions, [main/1]).
 :- use_module(genfta, [main/1]).
 :- use_module(splitClauseIds, [main/1]).
 :- use_module(ftaRefine, [main/1]).
@@ -49,8 +50,7 @@ logfile('result.txt').
 % Main
 % ---------------------------------------------------------------------------
 
-:- data flag/1. % TODO: use for other options
-:- data opt_array/0.
+:- data flag/1.
 :- data opt_debug_temps/0.
 
 % printing output of RAHFT
@@ -62,13 +62,14 @@ help_msg(
 "Usage: rahft <prog> [<Options>]
 
 Options:
- -help    display this help menu
- -v       verbose
- -int     uses interpolant automaton for trace generalisation during refinement
- -model   show model
- -array   enable array constraints
- -sp      only horn specialization
- -itr N   limit abstract refine iterations 
+ -help        display this help menu
+ -v           verbose
+ -splitvers   enable splitting of disjoint clauses
+ -int         uses interpolant automaton for trace generalisation during refinement
+ -model       show model
+ -array       enable array constraints
+ -sp          only horn specialization
+ -itr N       limit abstract refine iterations 
 
  -debug-temps    keep files for intermediate passes (debug)
 ").
@@ -76,6 +77,7 @@ Options:
 recognised_option('-help',  help, []).
 recognised_option('-model', model, []).
 recognised_option('-v', verbose, []).
+recognised_option('-splitvers', splitvers, []).
 recognised_option('-int',   int, []).
 recognised_option('-array', array, []).
 recognised_option('-sp',    horn_specialise(F), [F]).
@@ -94,7 +96,7 @@ main(ArgV) :-
 	).
 
 cleanup :-
-	retractall_fact(opt_array).
+	retractall_fact(flag(_)).
 
 main_(Options, Prog) :-
 	member(horn_specialise(OFile), Options),
@@ -110,7 +112,11 @@ main_(Options, Prog) :-
 	; WithInterpolant = no
 	),
 	( member(array, Options) ->
-	    assertz_fact(opt_array)
+	    assertz_fact(flag(array))
+	; true
+	),
+	( member(splitvers, Options) ->
+	    assertz_fact(flag(splitvers))
 	; true
 	),
 	( member(bounded(N), Options) ->
@@ -135,7 +141,7 @@ main_(Options, Prog) :-
 
 preProcessHorn(Prog, F_Int, F_QA, QACPA, F_WidenPoints, F_Threshold, OutputFile):-
 	verbose_opts(VerbOpts),
-	( opt_array ->
+	( flag(array) ->
 	    % TODO:{arrays(1): "preprocess"}
 	    %   for each clause in P, apply 
 	    %    - constraint replacement algorithm of [1] (Section 5.2, page 338 RR1-WR3);
@@ -157,9 +163,19 @@ preProcessHorn(Prog, F_Int, F_QA, QACPA, F_WidenPoints, F_Threshold, OutputFile)
 	verbose_message(['Analyse QA program']),
 	cpascc:main(['-prg', F_QA, '-withwut', 'bounded', '-wfunc', 'h79', '-widenpoints',F_WidenPoints,'-threshold', F_Threshold, '-o', QACPA|VerbOpts]),
 	% NOTE: Using Prog2, not Prog2Int!
-	( opt_array -> % TODO:{arrays} add more control over strengthening
-	    insertProps:main(['-array', '-prg', Prog2, '-props', QACPA, '-o', OutputFile])
-	; insertProps:main(['-prg', Prog2, '-props', QACPA, '-o', OutputFile])
+	( flag(array) -> % TODO:{arrays} add more control over strengthening
+	    InsertPropsOpts = ['-array']
+	; InsertPropsOpts = []
+	),
+	( flag(splitvers) ->
+	    atom_concat(OutputFile, '.insprops.pl', F_InsProps)
+	; F_InsProps = OutputFile
+	),
+	insertProps:main(['-prg', Prog2, '-props', QACPA, '-o', F_InsProps|InsertPropsOpts]),
+	( flag(splitvers) ->
+	    verbose_message(['Spliting disjoint versions']),
+	    splitVersions:main(['-prg', F_InsProps, '-o', OutputFile])
+	; true
 	).
 
 % ---------------------------------------------------------------------------
@@ -175,7 +191,7 @@ verifyCPA(Prog, F_Int, F_QA, QACPA, F_CPA, OutputFile, F_WidenPoints, F_Traceter
 	    % TODO:{arrays} "if there is no trace for false in A_P' then return safe" (is it equivalent?)
 	    Result=safe
 	; 
-	    ( opt_array ->
+	    ( flag(array) ->
 	        % TODO:{arrays(4) - "abstract_analyse"}
 	        % for each clause in P, apply
 	        %     constraint generalisation algorithm (step 2-3) of [1] (Section 5.3, page 344)
@@ -196,7 +212,7 @@ verifyCPA(Prog, F_Int, F_QA, QACPA, F_CPA, OutputFile, F_WidenPoints, F_Traceter
 	    verbose_message(['Analyse PE program']),
 	    cpascc:main(['-prg', OutputFile2Int, '-withwut', 'bounded', '-wfunc', 'h79', '-widenpoints',F_WidenPoints, '-threshold', F_Threshold, '-cex', F_Traceterm, '-o', F_CPA]),
 	    verbose_message(['Analysing counterexample']),
-	    ( opt_array ->
+	    ( flag(array) ->
 	        % TODO:{arrays(5) - in counterExample.pl} "need extension to the theory of arrays"
 	        write(user_error, 'TODO: use arrays in cex'), nl(user_error),
 	        counterExample:counterExample([OutputFile, F_Traceterm|VerbOpts], Result)
@@ -225,7 +241,7 @@ determinise_jar(Path) :-
 % Refinement
 % ---------------------------------------------------------------------------
 
-refineHorn(F_SP, F_FTA, F_DFTA,  F_SPLIT, F_TRACETERM, F_REFINE, WithInterpolant):-
+refineHorn(F_SP, F_FTA, F_DFTA, F_SPLIT, F_TRACETERM, F_REFINE, WithInterpolant):-
 	verbose_opts(VerbOpts),
         verbose_message(['Generate FTA from program and error trace']),
         genfta:main(['-prg', F_SP, '-trace', F_TRACETERM, '-o', F_FTA]),
