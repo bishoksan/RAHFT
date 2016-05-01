@@ -1,14 +1,14 @@
 :- module(genfta, [main/1], []).
 
-/*
-Input:  a program P and an error trace t passed in a file
-Output: finite tree automata FTA
+% Generate a FTA from a program P and an error trace.
 
-It generates finite tree automata of P and finite tree automata of t  following the definition 7 and 11 of http://akira.ruc.dk/~kafle/publications/comlan-15 (the states of these two automata are disjoint). Then it returns the union of them.
-
-*/
-% Generate an FTA from a program P, and an error trace.
-% The error trace is passed in a file as an argument.
+% Input:  a program P and an error trace t passed in a file
+% Output: finite tree automata FTA
+% 
+% It generates finite tree automata (FTA) of P and finite tree
+% automata of t following the definition 7 and 11 of
+% http://akira.ruc.dk/~kafle/publications/comlan-15 (the states of
+% these two automata are disjoint). Then it returns the union of them.
 
 :- use_module(library(write)).
 :- use_module(library(read)).

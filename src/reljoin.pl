@@ -1,14 +1,14 @@
 :- module(reljoin,[relJoin/4,test1/1,test2/1,test3/1], []).
 
+% Finds the solution of a conjunction, eliminating local variables
+% Sorts each relation first by its non-locals.
+
 :- use_module(library(lists)).
 :- use_module(library(aggregates)).
 :- use_module(library(sort), [keysort/2]).
 
 :- use_module(chclibs(timer_ciao)).
 :- use_module(chclibs(setops)).
-
-% Finds the solution of a conjunction, eliminating local variables
-% Sorts each relation first by its non-locals
 
 relJoin(Bs,H,Ys,Sols) :-
 	sortEachRel(Bs,Ys,Rs1),

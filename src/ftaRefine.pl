@@ -1,15 +1,17 @@
 :- module(ftaRefine, [main/1], []).
 
-/*
-Input: Program (P), a determined finite tree autoamta (DFTA), optionally a file containing a list of states in DFTA to be splitted (SF)
-Output: Program (P1).
-
-If SF is present, the procedure splits the states in DFTA using the information in SF producing a new automata D1 otherwise D1=D
-If D1 contains a state containing "errortrace" that state is eliminated from D1.
-Then it produces P1 from P and D1 (see Algorithm 2 of http://akira.ruc.dk/~kafle/publications/comlan-15).
-
-
-*/
+% Input: Program (P), a determined finite tree autoamta (DFTA),
+%   optionally a file containing a list of states in DFTA to be splitted
+%   (SF)
+% 
+% Output: Program (P1).
+% 
+% If SF is present, the procedure splits the states in DFTA using the
+% information in SF producing a new automata D1 otherwise D1=D
+% If D1 contains a state containing "errortrace" that state is
+% eliminated from D1.
+% Then it produces P1 from P and D1 (see Algorithm 2 of
+% http://akira.ruc.dk/~kafle/publications/comlan-15).
 
 :- use_module(library(write)).
 :- use_module(library(dynamic)).

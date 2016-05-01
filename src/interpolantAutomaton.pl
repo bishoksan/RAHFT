@@ -1,14 +1,15 @@
-% 
-% Special attention: the output file is append (not write) which works
-% only in this setting.
-% 
-% computes interpolant automata from a given set of Horn clauses and an
+:- module(interpolantAutomaton, [main/1], []).
+
+% Computes interpolant automata from a given set of Horn clauses and an
 % error trace.
 % 
 % The error trace is given in the form counterexample(TraceTerm) e.g.
 % 
 % counterexample(c1(c2(c14(c16(c16(c16(c16(c17(c19(c23(c27(c31(c5(c7(c10(c12))))))))))))))))
 % 
+%   **Special attention**: the output file is append (not write) which
+%   works only in this setting.
+%
 % Implementation Details:
 % 
 % 1. Tree interpolation algorithm is adapted from the paper by Régis
@@ -19,9 +20,6 @@
 % Jiao: Trace Abstraction Refinement for Solving Horn Clauses Technical
 % report Nr. ISCAS-SKLCS-15-19,State Key Laboratory of Computer Science,
 % Institute of Software, Chinese Academy of Sciences.
-% 
-
-:- module(interpolantAutomaton, [main/1], []).
 
 :- dynamic(interpolant/1).
 :- dynamic(ftaTransition/1).
@@ -56,22 +54,22 @@ recognised_option('-trace', traces(R),[R]).
 recognised_option('-o',generateAut(R),[R]).
 
 go1:-
-    %T= counterexample(c4(c1)),
-    %T= counterexample(c4(c2(c1,c1))),
-    T1=counterexample(c4(c3(c1, c2(c1)))),
-    %computeInterpolantAutomaton('examples/mc91.pl',false,T),
-    %computeInterpolantAutomaton('examples/fib.pl',false,T),
-    computeInterpolantAutomaton('examples/trabs.pl',false,T1),
-    printFTA(T1, user_output).
+	%T= counterexample(c4(c1)),
+	%T= counterexample(c4(c2(c1,c1))),
+	T1=counterexample(c4(c3(c1, c2(c1)))),
+	%computeInterpolantAutomaton('examples/mc91.pl',false,T),
+	%computeInterpolantAutomaton('examples/fib.pl',false,T),
+	computeInterpolantAutomaton('examples/trabs.pl',false,T1),
+	printFTA(T1, user_output).
 
 go:-
-    go2('Examples/running.nts.pl.pe.pl', 'Examples/trace.pl').
+	go2('Examples/running.nts.pl.pe.pl', 'Examples/trace.pl').
 
 go2(F, T):-
-    main(['-prg', F, '-trace', T]).
+	main(['-prg', F, '-trace', T]).
 
-%error trace starts with the predicate false
-%ArgV = ['-prg', Input, '-trace', TraceFile, -o, IntAutomata]
+% error trace starts with the predicate false
+% ArgV = ['-prg', Input, '-trace', TraceFile, -o, IntAutomata]
 main(ArgV):-
 	cleanup,
 	get_options(ArgV,Options,_),
@@ -102,53 +100,52 @@ setOptions(Options,Input,Traces, OutS) :-
 	; OutS=user_output
 	).
 
-%assume there is only one trace in the error trace file
+% Assume there is only one trace in the error trace file
 readErrorTrace(PFile, Traces):-
-    open(PFile, read, S),
-    readTerms(S, Traces),
-    %read(S, counterexample(Trace)),
-    close(S).
+	open(PFile, read, S),
+	readTerms(S, Traces),
+	%read(S, counterexample(Trace)),
+	close(S).
 
-%some optimizations here, if a clause is added do not evaluate other options at all
+% Some optimizations here, if a clause is added do not evaluate other options at all
 computeInterpolantAutomaton(F,A,CExTrace):-
-    ppl_initialize,
-    IntF = '/tmp/interpolant.props', % TODO: use temporary?
-    computeTreeInterpolants(F,A,CExTrace,IntF),
-    yices_init,
-    generateIFTA(IntF),
-    yices_exit,
-    ppl_finalize.
+	ppl_initialize,
+	IntF = '/tmp/interpolant.props', % TODO: use temporary?
+	computeTreeInterpolants(F,A,CExTrace,IntF),
+	yices_init,
+	generateIFTA(IntF),
+	yices_exit,
+	ppl_finalize.
 
 computeTreeInterpolants(F,A,CExTrace,IntF):-
-    CExTrace=counterexample(Trace),
-    load_file(F),
-    interpolantTree(A,Trace,Tree, 1), % tree nodes begin with 1
-    %write(Tree), nl,
-    open(IntF, write, S),
-    writeInterpolants(S,Tree),
-    close(S).
-
+	CExTrace=counterexample(Trace),
+	load_file(F),
+	interpolantTree(A,Trace,Tree, 1), % tree nodes begin with 1
+	%write(Tree), nl,
+	open(IntF, write, S),
+	writeInterpolants(S,Tree),
+	close(S).
 
 generateIFTA(IntF) :-
-    readInterpolants(IntF),
-    my_clause(H, Body, CId),
-    separate_constraints(Body, Cs, B),
-    varset((H,Body), Vars),
-    numbervars(Vars,0,_),
-    collectBodyInterpolants(B, BIs, InterpolantIds),
-    append(Cs, BIs, BodyInterpolants),
-    yices_vars(Vars, real, YicesVars),
-    (H=false ->
-        yices_unsat((BodyInterpolants), YicesVars),
-        makeFTA(H,B,CId, _, InterpolantIds)
-    ;
-        interpolant((H:-I-IId)),
-        getNegHeadFormula(I, NI),
-        append(NI, BodyInterpolants, ClsFormula),
-        yices_unsat(ClsFormula, YicesVars),
-        makeFTA(H,B,CId, IId, InterpolantIds)
-    ),
-    fail.
+	readInterpolants(IntF),
+	my_clause(H, Body, CId),
+	separate_constraints(Body, Cs, B),
+	varset((H,Body), Vars),
+	numbervars(Vars,0,_),
+	collectBodyInterpolants(B, BIs, InterpolantIds),
+	append(Cs, BIs, BodyInterpolants),
+	yices_vars(Vars, real, YicesVars),
+	( H=false ->
+	    yices_unsat((BodyInterpolants), YicesVars),
+	    makeFTA(H,B,CId, _, InterpolantIds)
+	;
+	    interpolant((H:-I-IId)),
+	    getNegHeadFormula(I, NI),
+	    append(NI, BodyInterpolants, ClsFormula),
+	    yices_unsat(ClsFormula, YicesVars),
+	    makeFTA(H,B,CId, IId, InterpolantIds)
+	),
+	fail.
 generateIFTA(_).
 
 
@@ -179,23 +176,23 @@ generateIFTA(_).
 
 
 writeInterpolants(S, tree(false,_,_,SubTrees,_, _, _)):-
-    !,
-    writeInterpolantTrees(S, SubTrees).
+	!,
+	writeInterpolantTrees(S, SubTrees).
 writeInterpolants(S, tree(B,_,I,SubTrees,_, _, NId)):-
-    write(S, B),
-    write(S, ' :- '),
-    write(S, I),
-    write(S,'-'),
-    write(S, NId),
-    write(S, '.'),
-    %assertz(interpolant((B:-I))),
-    nl(S),
-    writeInterpolantTrees(S, SubTrees).
-	
+	write(S, B),
+	write(S, ' :- '),
+	write(S, I),
+	write(S,'-'),
+	write(S, NId),
+	write(S, '.'),
+	%assertz(interpolant((B:-I))),
+	nl(S),
+	writeInterpolantTrees(S, SubTrees).
+
 writeInterpolantTrees(_,[]).
 writeInterpolantTrees(S, [B|Bs]) :-
 	writeInterpolants( S, B),
-    writeInterpolantTrees(S, Bs).
+	writeInterpolantTrees(S, Bs).
 
 %rename each predicate to __r to avoid confusion except false which renames to error
 makeFTA(H,Bs,Id, HId, InterpolantIds) :-
@@ -209,54 +206,52 @@ makeFTA(H,Bs,Id, HId, InterpolantIds) :-
 	).
 
 renameHead(P, P1, PId):-
-    name(P, PName),
-    name(PId, IdName),
-    append(PName, [95,95,95|IdName], PName1), % ___PId
-    name(P1, PName1).
+	name(P, PName),
+	name(PId, IdName),
+	append(PName, [95,95,95|IdName], PName1), % ___PId
+	name(P1, PName1).
 
 getPreds([],[],[]).
 getPreds([B|Bs],[P1|Qs],[Id|Ids]) :-
 	functor(B,P,_),
-    name(P, PName),
-    name(Id, IdName),
-    append(PName, [95,95,95|IdName], PName1), % ___Id
-    name(P1, PName1),
+	name(P, PName),
+	name(Id, IdName),
+	append(PName, [95,95,95|IdName], PName1), % ___Id
+	name(P1, PName1),
 	getPreds(Bs,Qs,Ids).
 
 collectBodyInterpolants([], [],[]).
 collectBodyInterpolants([B|Bs], Interpolants, [IId|RIds]):-
-    interpolant((B:-I-IId)),
-    collectBodyInterpolants(Bs, BIs, RIds),
-    append(I, BIs, Interpolants).
+	interpolant((B:-I-IId)),
+	collectBodyInterpolants(Bs, BIs, RIds),
+	append(I, BIs, Interpolants).
 
 
 collectDisjInterpolants([B], [BDInterpolants]):-
-    !,
-    findall(I, interpolant((B:-I)), BInterpolants), %BInterpolants is a list of a list
-    listofList2Disj(BInterpolants, BDInterpolants).
+	!,
+	findall(I, interpolant((B:-I)), BInterpolants), %BInterpolants is a list of a list
+	listofList2Disj(BInterpolants, BDInterpolants).
 collectDisjInterpolants([B|Bs], [BDInterpolants|BsDInterpolants]):-
-    !,
-    findall(I, interpolant((B:-I)), BInterpolants), %BInterpolants is a list of a list
-    listofList2Disj(BInterpolants, BDInterpolants),
-    collectDisjInterpolants(Bs, BsInterpolants),
-    listofList2Disj(BsInterpolants, BsDInterpolants).
+	!,
+	findall(I, interpolant((B:-I)), BInterpolants), %BInterpolants is a list of a list
+	listofList2Disj(BInterpolants, BDInterpolants),
+	collectDisjInterpolants(Bs, BsInterpolants),
+	listofList2Disj(BsInterpolants, BsDInterpolants).
 collectDisjInterpolants([], []).
 
 readInterpolants(F) :-
-    open(F, read, S),
-    read(S,C),
-    storeInterpolants(S,C),
-    close(S).
+	open(F, read, S),
+	read(S,C),
+	storeInterpolants(S,C),
+	close(S).
 
 storeInterpolants(_, end_of_file):-!.
 storeInterpolants(S, I):-
-    assertz(interpolant(I)),
-    read(S, I1),
-    storeInterpolants(S, I1).
+	assertz(interpolant(I)),
+	read(S, I1),
+	storeInterpolants(S, I1).
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+% ---------------------------------------------------------------------------
 
 % Ys is the set of head variable and Zs the set of existial vars, 0 represents no interpolant
 %is computed and K is the node Id
@@ -267,15 +262,16 @@ constraintTree(B,T,tree(B,Ys,Cs1,SubTrees,Zs, 0, K), K, K2) :-
 	varset((B,Bs1),Ws),
 	setdiff(Ws,Ys,Zs),
 	separate_constraints(Bs1,Cs1,Bs2),
-    K1 is K+1,
+	K1 is K+1,
 	constraintTrees(Bs2,Ts1,SubTrees, K1, K2).
 	
 constraintTrees([],[],[], K, K).
 constraintTrees([B|Bs],[T|Ts],[S|Ss], K, K2) :-
 	constraintTree(B,T,S,K, K1),
-    constraintTrees(Bs,Ts,Ss, K1, K2).
+	constraintTrees(Bs,Ts,Ss, K1, K2).
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%       BFS  Begin        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% ---------------------------------------------------------------------------
+% BFS
 
 bfs(tree(_,_,_,[],_, _, K), [],RevBfsOrder,[K|RevBfsOrder]) :-
     !.
@@ -289,7 +285,7 @@ bfsChildren([],  RevBfsOrder, RevBfsOrder).
 bfsChildren([S|Ss], RevBfsOrder, RevBfsOrder2) :-
 	bfs(S, Ss, RevBfsOrder, RevBfsOrder2).
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%      BFS     End      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% ---------------------------------------------------------------------------
 
 %update interpolant for the false node
 updateInterpolantForFalseNode(tree(false,Ys,_,SubTrees,Zs, _, K), tree(false,Ys,false,SubTrees,Zs, 1, K)).
@@ -298,122 +294,124 @@ updateInterpolantTree(tree(B,Ys,_,SubTrees,Zs, _, K), K, I, tree(B,Ys,I,SubTrees
 	!.
 updateInterpolantTree(tree(B,Ys,Cs1,SubTrees,Zs, IsInterpolant, K), N, I, tree(B,Ys,Cs1,SubTrees1,Zs, IsInterpolant, K)) :-
 	!,
-    updateInterpolantTrees(SubTrees, N,I, SubTrees1).
+	updateInterpolantTrees(SubTrees, N,I, SubTrees1).
 
 	
 updateInterpolantTrees([],_,_, []).
 updateInterpolantTrees([B|Bs],N,I, [B1|Bs1]) :-
 	updateInterpolantTree(B,N,I, B1),
-    updateInterpolantTrees(Bs,N,I, Bs1).
+	updateInterpolantTrees(Bs,N,I, Bs1).
 
 getInterpolantTree(_, CTree, [], CTree):-
-    !.
-%for node1 which is the false node, do nothing
+	!.
+% for node1 which is the false node, do nothing
 getInterpolantTree(Xs, CTree, [1|Ns], ITree):-
-    !,
-    getInterpolantTree(Xs, CTree, Ns, ITree).
+	!,
+	getInterpolantTree(Xs, CTree, Ns, ITree).
 getInterpolantTree(Xs, CTree, [N|Ns], ITree):-
-    interpolantConstituents(CTree, N, [], A,    [], B ), %the first [] is for collecting constraits for A and the second [] for collecting constraints for B
-    %write('for node '), write(N), nl,
-    %write('Interpolant of '), write(A), nl,
-    %write(' and '), nl,
-    %write(B), nl,
-    computeInterpolant(Xs, A, B, I),
-    %write('interpolant is '), nl,
-    %write(I), nl,
-    updateInterpolantTree(CTree, N, I, CTree1),
-    getInterpolantTree(Xs, CTree1, Ns, ITree).
+	interpolantConstituents(CTree, N, [], A,    [], B ), %the first [] is for collecting constraits for A and the second [] for collecting constraints for B
+	%write('for node '), write(N), nl,
+	%write('Interpolant of '), write(A), nl,
+	%write(' and '), nl,
+	%write(B), nl,
+	computeInterpolant(Xs, A, B, I),
+	%write('interpolant is '), nl,
+	%write(I), nl,
+	updateInterpolantTree(CTree, N, I, CTree1),
+	getInterpolantTree(Xs, CTree1, Ns, ITree).
 
 
-
-%if the node is found, then its constraints along with the interpolants of its children becomes the first constraint
+% If the node is found, then its constraints along with the
+% interpolants of its children becomes the first constraint.
 interpolantConstituents(tree(_,_,Cs1,SubTrees,_, _, K), K, First1, First,   Second1, Second):-
-    !,
-    append(Cs1,First1, First2),
-    collectConstraintsA(SubTrees,K, First2, First,  Second1, Second).
-%if the node is not found, all the constraints go into the second
-%if a child node has interpolant already do not continue to its children, stop there
+	!,
+	append(Cs1,First1, First2),
+	collectConstraintsA(SubTrees,K, First2, First,  Second1, Second).
+% If the node is not found, all the constraints go into the second.
+% if a child node has interpolant already do not continue to its children, stop there.
 interpolantConstituents(tree(_,_,Cs1,_,_, 1, _),  _, First, First, InitConstr, Second):-
-    !,
-    append(Cs1,InitConstr, Second).
-%if a child node has no interpolant then continue to its children
+	!,
+	append(Cs1,InitConstr, Second).
+% If a child node has no interpolant then continue to its children.
 interpolantConstituents(tree(_,_,Cs1,SubTrees,_, 0, _), N, First1, First,InitConstr, Second):-
-    !,
-    append(Cs1,InitConstr, Second1),
-    collectConstraints(SubTrees,N, First1, First,  Second1, Second).
+	!,
+	append(Cs1,InitConstr, Second1),
+	collectConstraints(SubTrees,N, First1, First,  Second1, Second).
 
 
 collectConstraintsA([],_,First, First, Second,Second):-
-    !.
+	!.
 collectConstraintsA([T|Ts],N, First1,First,  InitConstr, Second) :-
 	interpolantConstituentsA(T,N, First1, First2,  _, _),
 	collectConstraintsA(Ts,N, First2, First,  InitConstr, Second).
 
-%this is done with the view that all the children nodes have their interpolant computed already
+% This is done with the view that all the children nodes have their
+% interpolant computed already.
 interpolantConstituentsA(tree(_,_,Cs1,_,_, _, _), _, First1, First2,  _, _):-
-    !,
-    append(Cs1,First1, First2).
-    %collectConstraintsA(SubTrees,_, First2, First,  Second1, Second).
+	!,
+	append(Cs1,First1, First2).
+%collectConstraintsA(SubTrees,_, First2, First,  Second1, Second).
 
 collectConstraints([],_,First, First, Second,Second):-
-    !.
+	!.
 collectConstraints([T|Ts],N, First1, First, InitConstr, Second) :-
 	interpolantConstituents(T,N, First1, First2,  InitConstr, Second1),
 	collectConstraints(Ts,N, First2,First, Second1, Second).
 
 interpolantTree(A,Trace,ITree, K) :-
 	constraintTree(A,Trace,Tree1, K, _),
-    %write('constraint tree '), nl,
-    varset(Tree1,Xs),
+	%write('constraint tree '), nl,
+	varset(Tree1,Xs),
 	numbervars(Xs,0,_),
-    %write(Tree1), nl,
-    bfs(Tree1, [], [], List),
-    %write('bfs list '), nl,
-    %write(List), nl,
-    getInterpolantTree(Xs,Tree1, List, ITree1),
-    %write('int tree '), nl,
-    %write(ITree1), nl,
-    %update interpolant for the false node
-    updateInterpolantForFalseNode(ITree1, ITree).
+	%write(Tree1), nl,
+	bfs(Tree1, [], [], List),
+	%write('bfs list '), nl,
+	%write(List), nl,
+	getInterpolantTree(Xs,Tree1, List, ITree1),
+	%write('int tree '), nl,
+	%write(ITree1), nl,
+	%update interpolant for the false node
+	updateInterpolantForFalseNode(ITree1, ITree).
 
 
 printFTA(Trace, S):-
-    %check if interpolant FTA is not empty
-    findall(Left, ftaTransition((Left :- _)), FTAL),
-    (FTAL=[] ->
-        %print FTA corresponding to the error trace
-        printErrorFTA(Trace, S)
-    ;
-        printInterpolantFTA(Trace, S)
-    ).
+	%check if interpolant FTA is not empty
+	findall(Left, ftaTransition((Left :- _)), FTAL),
+	( FTAL=[] ->
+	    %print FTA corresponding to the error trace
+	    printErrorFTA(Trace, S)
+	;
+	    printInterpolantFTA(Trace, S)
+	).
 
 printErrorFTA(Trace, S):-
-    makeTraceFTAs([Trace],0,_,S).
+	makeTraceFTAs([Trace],0,_,S).
 printErrorFTA(_,_).
 
 printInterpolantFTA(_,S):-
-    ftaTransition((Left :- Right)),
-    write(S, Left),
-    write(S, ' -> '),
-    write(S, Right),
-    write(S,'.'),
-    nl(S),
-    fail.
+	ftaTransition((Left :- Right)),
+	write(S, Left),
+	write(S, ' -> '),
+	write(S, Right),
+	write(S,'.'),
+	nl(S),
+	fail.
 printInterpolantFTA(_,_).
 
 assertFTATransition(Left, Right):-
-    (ftaTransition((Left :- Right)) ->
-        true
-    ;
-        assertz(ftaTransition((Left :- Right)))
-    ).
+	( ftaTransition((Left :- Right)) ->
+	    true
+	;
+	    assertz(ftaTransition((Left :- Right)))
+	).
 
 
 readTerms(S,Ts) :-
 	read(S,C),
-	(C==end_of_file -> Ts=[];
-	 Ts=[C|Ts1],
-	 readTerms(S,Ts1)).
+	( C==end_of_file -> Ts=[]
+	; Ts=[C|Ts1],
+	  readTerms(S,Ts1)
+	).
 
 makeTraceFTAs([T|Ts],K0,K2,OutS) :-
 	T=counterexample(Trace),
@@ -429,11 +427,10 @@ term2type(A,Def) :-
 	term2type6(A,_,Def,[],0,_).
 	
 term2type4(A,Def,K0,K1) :-
-		term2type6(A,_,Def,[],K0,K1).
+	term2type6(A,_,Def,[],K0,K1).
 	
 termlist2type(Xs,T) :-
 	argtypes(Xs,_,T,[],0,_).
-
 
 term2type6(T, dynamic,As,As,K,K) :-
         var(T),
@@ -462,12 +459,10 @@ writeFTA([T|Ts],S) :-
 	nl(S),
 	writeFTA(Ts,S).
 
-
 cleanup:-
-    retractall(interpolant(_)),
-    retractall(my_clause(_,_,_)),
-    retractall(ftaTransition(_)).
-
+	retractall(interpolant(_)),
+	retractall(my_clause(_,_,_)),
+	retractall(ftaTransition(_)).
 
 getNegHeadFormula([HF], HF1):-
         HF1=[neg(HF)].

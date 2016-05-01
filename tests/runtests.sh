@@ -65,7 +65,7 @@ cd "$_base"
 
 rm -f "$solver_res"
 for i in $tests; do
-    echo "### SOLVING $i (opts: $solveropts) ###"
+    echo "% Solving $i (opts: $solveropts)"
     set +e
     $timeoutcmd "$hard_timeout" $solver "$testdir/$i" $solveropts
     err=$?
@@ -78,8 +78,8 @@ done
 
 if diff <(sed 's/time(.*)/time/g' "$solver_res") \
 	<(sed 's/time(.*)/time/g' "$solver_res"-good); then
-    printf "\nTESTS SEEMS OK\n"
+    printf "\n%% TESTS SEEMS OK\n"
 else
-    printf "\nTESTS DIFFER, SOMETHING MAY BE WRONG\n"
+    printf "\n%% TESTS DIFFER, SOMETHING MAY BE WRONG\n"
 fi
 
