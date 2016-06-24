@@ -311,6 +311,14 @@ applyRAHFT(Prog1, WithInterpolant, ShowModel, Bounded) :-
 	createTmpFileRef(ResultDir, F, F_FTA, F_DFTA, F_SPLIT, F_REFINE),
 	%
 	statistics(runtime,[START|_]),
+	% Setup theories
+	retractall_fact(prg_theory(_)),
+	( flag(array) ->
+	    verbose_message(['Enable array theory']),
+	    assertz_fact(prg_theory(array))
+	; true
+	), 
+	%
 	( flag(raf) ->
 	    verbose_message(['Redundant argument filtering']),
 	    % (it may increase precision or even solvability of some problems)
