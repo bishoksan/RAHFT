@@ -1,13 +1,12 @@
-% Manifest file for RAHFT
-bundle_name('RAHFT').
-bundle_packname('RAHFT').
-bundle_requires([
+:- bundle('RAHFT').
+version('1.0').
+depends([
     core,
     chclibs,
     ciao_yices
 ]).
-bundle_alias_paths([
+alias_paths([
     rahft = 'src'
 ]).
-
-
+lib('src').
+cmd('src/rahft').
