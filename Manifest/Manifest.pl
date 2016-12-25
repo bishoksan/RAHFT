@@ -3,7 +3,7 @@ version('1.0').
 depends([
     core,
     chclibs,
-    ciao_yices
+    'github.com/jfmc/ciao_yices'
 ]).
 alias_paths([
     rahft = 'src'
