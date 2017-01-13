@@ -121,8 +121,8 @@ cond_assert(Head,H,C):-
 		
 alreadyAsserted(Head,H) :-
 	factc(Head,H1,_), 
-	entails(H,H1),
-	entails(H1,H).
+	contains(H,H1),
+	contains(H1,H).
 	
 predicates(Ps) :-
 	setof(P/N,

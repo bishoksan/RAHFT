@@ -169,8 +169,8 @@ cond_assert(Head,H):-
 		
 alreadyAsserted(Head,H) :-
 	fact(Head,H1), 
-	entails(H,H1),
-	entails(H1,H).
+	contains(H,H1),
+	contains(H1,H).
 	
 
 readPropFile(PFile) :-
