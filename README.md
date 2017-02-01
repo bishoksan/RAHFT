@@ -14,13 +14,15 @@ Query-answer tranformer etc. It also includes a Java library for
 manipulating finite tree automata.
 
 ## Requirements
-1. [Ciao](http://github.com/ciao-lang/ciao) with
-   [Parma Polyhedra Library](http://bugseng.com/products/ppl/) support
-   (installed from git repository with `./ciao-boot.sh local-install
-   --contrib:with_ppl=yes --contrib:auto_install_ppl=yes`)
-2. Ciao bindings for [Yices SMT solver](http://yices.csl.sri.com/)
-   (`ciao get github.com/jfmc/ciao_yices`)
-3. [CHCLibs](http://github.com/bishoksan/chclibs)
+1. [Ciao](https://github.com/ciao-lang/ciao) 1.16 or newer
+   (installed from git repository with `./ciao-boot.sh local-install`)
+2. [Ciao bindings](https://github.com/ciao-lang/ciao_ppl) for
+   [Parma Polyhedra Library](https://bugseng.com/products/ppl/)
+   (`ciao get ciao_ppl --ciao_ppl:with_ppl=yes --ciao_ppl:auto_install_ppl=yes`)
+2. [Ciao bindings](https://github.com/jfmc/ciao_yices) for
+   [Yices SMT solver](https://yices.csl.sri.com/) (`ciao get
+   github.com/jfmc/ciao_yices`)
+3. [CHCLibs](https://github.com/bishoksan/chclibs)
    (`ciao get github.com/bishoksan/chclibs`)
 
 **NOTE**: Due to a requirement in Yices, Ciao must be compiled in 64-bits
@@ -34,21 +36,15 @@ You can automatically fetch, build, and install RAHFT using:
 ciao get github.com/bishoksan/RAHFT
 ```
 
-This command stores the source and generates the binaries in the Ciao
-_workspace directory_. This directory is given by the value of the
-`CIAOPATH` environment variable (or `~/.ciao` if unspecified).
+All code will be downloaded and built under the first directory
+specified in the `CIAOPATH` environment variable or `~/.ciao` by
+default.
 
-Binaries are placed in the `$CIAOPATH/build/bin` directory (or
-`~/.ciao/build/bin`). To call `rahft` without specifying its full path
-it is recommended to include this directory in your `PATH`:
-
-```sh
-export PATH=$CIAOPATH/build/bin:$PATH
-# or export PATH=~/.ciao/build/bin:$PATH
-```
-
-**For developing** RAHFT it is recommended to define `CIAOPATH` (E.g.,
-`~/ciao`) and clone this repository in your workspace.
+**For developing** RAHFT it is recommended to define your own
+_workspace directory_ and clone this repository. E.g., `export
+CIAOPATH=~/ciao` and update your `PATH` with `eval "$(ciao-env)"`.
+The dependencies can be cloned manually or fetched automatically by
+calling `ciao fetch` at the RAHFT source directory.
 
 ## Usage
 
