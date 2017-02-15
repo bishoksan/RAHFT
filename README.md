@@ -14,15 +14,16 @@ Query-answer tranformer etc. It also includes a Java library for
 manipulating finite tree automata.
 
 ## Requirements
+
 1. [Ciao](https://github.com/ciao-lang/ciao) 1.16 or newer
    (installed from git repository with `./ciao-boot.sh local-install`)
 2. [Ciao bindings](https://github.com/ciao-lang/ciao_ppl) for
    [Parma Polyhedra Library](https://bugseng.com/products/ppl/)
-   (`ciao get ciao_ppl --ciao_ppl:with_ppl=yes --ciao_ppl:auto_install_ppl=yes`)
-2. [Ciao bindings](https://github.com/jfmc/ciao_yices) for
+   (`ciao get ciao_ppl --ciao_ppl:enabled=yes --ciao_ppl:auto_install=yes`)
+3. [Ciao bindings](https://github.com/jfmc/ciao_yices) for
    [Yices SMT solver](https://yices.csl.sri.com/) (`ciao get
    github.com/jfmc/ciao_yices`)
-3. [CHCLibs](https://github.com/bishoksan/chclibs)
+4. [CHCLibs](https://github.com/bishoksan/chclibs)
    (`ciao get github.com/bishoksan/chclibs`)
 
 **NOTE**: Due to a requirement in Yices, Ciao must be compiled in 64-bits
