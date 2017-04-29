@@ -17,7 +17,7 @@
 
 :- use_module(chclibs(setops)).
 :- use_module(chclibs(canonical)).
-%:- use_module(chclibs(linearize)). % TODO: unused
+:- use_module(chclibs(linearize)).
 :- use_module(chclibs(timer_ciao)).
 :- use_module(chclibs(program_loader)).
 :- use_module(chclibs(ppl_ops)).
@@ -92,8 +92,8 @@ operator:-
 	append(Cs1,Cs,Cs2),
 	bodyAnswerConstraints(Bs,Cs3),
 	append(Cs2,Cs3,Cs4),
-	numbervars((Head,Cs4,Bs),0,_),
 	( opt_array ->
+        numbervars((Head,Cs4,Bs),0,_),
 	    % DONE:{arrays(3)}
 	    %   let H:- C_l, C_a, B be a clause with C_l being linear arithmetic
 	    %   constraint and C_a being array constraints. Say we need to strengthen
@@ -111,10 +111,15 @@ operator:-
 	    display(array(Cs4a,Cs4r)), nl,
 	    % TODO:{arrays} implement option 2 (use yices for array constraints)
 	    satisfiable(Cs4r,H),
+        getConstraint(H,Cs5),
 	    display(was_satisfiable), nl
-	; satisfiable(Cs4,H)
+	;
+    separateLinearConstraints(Cs4,CsLin,CsN),
+    numbervars((Head,CsLin,Bs,CsN),0,_),
+    satisfiable(CsLin,H),
+    getConstraint(H,Cs6),
+    append(Cs6,CsN,Cs5)
 	),
-	getConstraint(H,Cs5),
 	append(Cs5,Bs,B1),
 	assertz(pe_clause(Head,B1)),
 	fail.
@@ -141,6 +146,14 @@ appendConstraints([],_,Cs,Cs).
 appendConstraints([prop(Head,Cs1)|Props],Head,Cs,Cs3) :-
 	appendConstraints(Props,Head,Cs,Cs2),
 	append(Cs1,Cs2,Cs3).
+
+separateLinearConstraints([],[],[]).
+separateLinearConstraints([C|Cs],[C|Cs1],Cs2) :-
+	linear_constraint(C),
+	!,
+	separateLinearConstraints(Cs,Cs1,Cs2).
+separateLinearConstraints([C|Cs],Cs1,[C|Cs2]) :-
+	separateLinearConstraints(Cs,Cs1,Cs2).
 
 % TODO: unused
 %%unsat(Cs) :-
