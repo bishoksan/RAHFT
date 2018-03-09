@@ -3,7 +3,7 @@
 (RAHFT) RAHFT is a tool based on abstraction refinement for verifying
 Constrained Horn clauses using abstract interpretation and finite tree
 automata. The correctness of results are with respect to the `input Horn clauses` and over the theory
-of `linear real arithmetic`.
+of `linear int arithmetic`.
 
 ## Programming 
 
