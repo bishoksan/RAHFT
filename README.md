@@ -1,6 +1,6 @@
-# Refinement of Abstraction in Horn clauses using Finite Tree automata
+# Refinement of Abstraction in Horn clauses using Finite Tree automata (RAHFT)
 
-(RAHFT) RAHFT is a tool based on abstraction refinement for verifying
+RAHFT is a tool based on abstraction refinement for verifying
 Constrained Horn clauses using abstract interpretation and finite tree
 automata. The correctness of results are with respect to the `input Horn clauses` and over the theory
 of `linear integer arithmetic`.
