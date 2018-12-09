@@ -1,11 +1,11 @@
-:- module(integerProgram,[main/1],[]).
+:- module(integerProgram,[main/1],[dynamic]).
 
 :- use_module(library(lists)).
 :- use_module(chclibs(common), [separate_array_constraints/3]).
 :- use_module(library(sort)).
+:- use_module(library(streams)).
 :- use_module(library(write)).
 :- use_module(library(aggregates)).
-:- use_module(library(dynamic)).
 :- use_module(chclibs(load_simple)).
 
 :- include(chclibs(get_options)).

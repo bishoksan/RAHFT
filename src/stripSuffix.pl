@@ -1,6 +1,6 @@
-:- module(stripSuffix, [main/1], []).
+:- module(stripSuffix, [main/1], [dynamic]).
 
-:- use_module(library(dynamic)).
+:- use_module(library(streams)).
 :- use_module(library(write)).
 :- use_module(library(read)).
 :- use_module(library(lists)).

@@ -1,7 +1,6 @@
-:- module(atomicProps,[main/1],[]).
+:- module(atomicProps,[main/1],[dynamic]).
 
 :- use_module(library(write)).
-:- use_module(library(dynamic)).
 :- use_module(library(terms_vars)).
 :- use_module(library(ppl)).
 :- use_module(library(lists)).

@@ -1,8 +1,8 @@
-:- module(splitClauseIds, [main/1], []).
+:- module(splitClauseIds, [main/1], [dynamic]).
 
+:- use_module(library(streams)).
 :- use_module(library(read)).
 :- use_module(library(write)).
-:- use_module(library(dynamic)).
 :- use_module(library(aggregates)).
 :- use_module(library(terms_vars)).
 :- use_module(library(ppl)).

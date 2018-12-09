@@ -1,4 +1,4 @@
-:- module(genfta, [main/1], []).
+:- module(genfta, [main/1], [dynamic]).
 
 % Generate a FTA from a program P and an error trace.
 
@@ -10,9 +10,9 @@
 % http://akira.ruc.dk/~kafle/publications/comlan-15 (the states of
 % these two automata are disjoint). Then it returns the union of them.
 
+:- use_module(library(streams)).
 :- use_module(library(write)).
 :- use_module(library(read)).
-:- use_module(library(dynamic)).
 :- use_module(library(lists)).
 
 :- use_module(chclibs(builtins)).

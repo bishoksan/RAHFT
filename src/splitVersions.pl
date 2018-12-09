@@ -1,4 +1,4 @@
-:- module(splitVersions,[main/1],[]).
+:- module(splitVersions,[main/1],[dynamic]).
 
 % Explicit splitting of predicates based on disjoint set of constraints
 % in their bodies. This is motivated by the fact that the convex hull
@@ -33,8 +33,8 @@
 :- use_module(library(terms_vars)).
 :- use_module(library(ppl)).
 :- use_module(library(lists)).
+:- use_module(library(streams)).
 :- use_module(library(write)).
-:- use_module(library(dynamic)).
 :- use_module(library(aggregates)).
 
 :- dynamic(factc/3).

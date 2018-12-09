@@ -1,8 +1,7 @@
-:- module(genfta1, [main/1], []).
+:- module(genfta1, [main/1], [dynamic]).
 
 % Generate an FTA from a program, and an error trace.
 
-:- use_module(library(dynamic)).
 :- use_module(library(write)).
 :- use_module(library(read)).
 :- use_module(library(lists)).

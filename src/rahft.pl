@@ -1,4 +1,4 @@
-:- module(rahft, [main/1], []).
+:- module(rahft, [main/1], [datafacts]).
 
 % Input: a set of Horn clauses or program P
 % Output: safe/unsafe
@@ -8,12 +8,13 @@
 % refinement algorithm for checking the existence of a model. For
 % details: http://akira.ruc.dk/~kafle/publications/comlan-15
 
+:- use_module(library(streams)).
 :- use_module(library(format), [format/2, format/3]).
 :- use_module(library(system_extra), [mkpath/1,mktempdir_in_tmp/2, rmtempdir/1]).
 :- use_module(library(system)). % mktemp_in_tmp is available here
 :- use_module(library(pathnames), [path_basename/2, path_concat/3, path_split/3]).
 :- use_module(library(terms), [atom_concat/2]).
-:- use_module(library(prolog_sys), [statistics/2]).
+:- use_module(engine(runtime_control), [statistics/2]).
 :- use_module(library(lists)).
 
 :- use_module(chclibs(thresholds1), [main/1]).

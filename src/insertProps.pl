@@ -1,4 +1,4 @@
-:- module(insertProps, [main/1], []).
+:- module(insertProps, [main/1], [dynamic]).
 
 % Input: a program P, a file F containing an interpretation of P
 % Output: a program P1
@@ -8,9 +8,9 @@
 % predicates H and Bi. For further details: Section 4.3 of
 % http://akira.ruc.dk/~kafle/publications/pepm-15
 
+:- use_module(library(streams)).
 :- use_module(library(write)).
 :- use_module(library(read)).
-:- use_module(library(dynamic)).
 :- use_module(library(terms_vars)).
 :- use_module(library(ppl)).
 :- use_module(library(lists)).

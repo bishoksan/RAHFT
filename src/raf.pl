@@ -1,4 +1,4 @@
-:- module(raf, [main/1, raf/3], []).
+:- module(raf, [main/1, raf/3], [dynamic]).
 
 % JPG - RAF algorithm.  Leuschel & Jørgensen 1996
 %
@@ -16,7 +16,7 @@
 :- use_module(chclibs(setops)).
 
 :- use_module(library(lists)).
-:- use_module(library(dynamic)).
+:- use_module(library(streams)).
 :- use_module(library(write)).
 
 :- use_module(reljoin).

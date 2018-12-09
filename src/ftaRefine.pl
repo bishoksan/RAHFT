@@ -1,4 +1,4 @@
-:- module(ftaRefine, [main/1], []).
+:- module(ftaRefine, [main/1], [dynamic]).
 
 % Input: Program (P), a determined finite tree autoamta (DFTA),
 %   optionally a file containing a list of states in DFTA to be splitted
@@ -13,8 +13,8 @@
 % Then it produces P1 from P and D1 (see Algorithm 2 of
 % http://akira.ruc.dk/~kafle/publications/comlan-15).
 
+:- use_module(library(streams)).
 :- use_module(library(write)).
-:- use_module(library(dynamic)).
 :- use_module(library(read)).
 :- use_module(library(lists)).
 
