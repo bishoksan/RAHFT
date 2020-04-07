@@ -19,8 +19,8 @@
 :- use_module(library(streams)).
 :- use_module(library(write)).
 
-:- use_module(reljoin).
-:- use_module(cartprod).
+%:- use_module(reljoin).
+%:- use_module(cartprod).
 
 :- dynamic(topGoal/1).
 
@@ -37,7 +37,7 @@ raf(F,Entry,OutF) :-
     functor(Entry1,P,N),
     assert(topGoal(P/N)),
     readprog(F,[predicates(Ps)|Cls]),
-    initFilters(Ps,R0),                     % start with all args that might be erasable. 
+    initFilters(Ps,R0),			% start with all args that might be erasable. 
     insertFilters(R0,root,F0),
     raf_fix(changed,Cls,F0,Filters),
     filterProg(Cls,Filters,Cls1),
@@ -182,7 +182,7 @@ collectFilteredArgs(H,J,Us,Vs,Ys) :-
     collectFilteredArgs(H,J1,Us,Vs,Ys1).
     
 
-filteredArg(A,_,_,J,[J|Ys1],Ys1) :-             % rule 1
+filteredArg(A,_,_,J,[J|Ys1],Ys1) :-     % rule 1
     nonvar(A),
     !.
 filteredArg(A,Us,_,J,[J|Ys1],Ys1) :-    % rule 2
