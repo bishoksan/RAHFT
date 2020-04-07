@@ -22,7 +22,7 @@
 :- use_module(chclibs(qa), [main/1]).
 :- use_module(chclibs(common)).
 
-:- use_module(raf, [main/1]).
+:- use_module(chclibs(raf), [main/1]).
 :- use_module(counterExample, [counterExample/2]).
 :- use_module(insertProps, [main/1]).
 :- use_module(splitVersions, [main/1]).
