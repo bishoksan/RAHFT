@@ -22,10 +22,10 @@
 :- use_module(chclibs(cpascc), [main/1]).
 :- use_module(chclibs(qa), [main/1]).
 :- use_module(chclibs(common)).
+:- use_module(chclibs(insertProps), [main/1]).
 
 :- use_module(chclibs(raf), [main/1]).
 :- use_module(counterExample, [counterExample/2]).
-:- use_module(insertProps, [main/1]).
 :- use_module(splitVersions, [main/1]).
 :- use_module(genfta, [main/1]).
 :- use_module(splitClauseIds, [main/1]).
