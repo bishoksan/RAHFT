@@ -32,9 +32,9 @@ installed automatically:
 1. [Ciao bindings](https://github.com/ciao-lang/ciao_ppl) for
    [Parma Polyhedra Library](https://bugseng.com/products/ppl/)
    (`ciao get ciao_ppl`)
-2. [Ciao bindings](https://github.com/jfmc/ciao_yices) for
+2. [Ciao bindings](https://github.com/ciao-lang/ciao_yices) for
    [Yices SMT solver](https://yices.csl.sri.com/)
-   (`ciao get github.com/jfmc/ciao_yices`)
+   (`ciao get ciao_yices`)
 3. [CHCLibs](https://github.com/bishoksan/chclibs)
    (`ciao get github.com/bishoksan/chclibs`)
 
